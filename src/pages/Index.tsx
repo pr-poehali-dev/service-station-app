@@ -240,6 +240,20 @@ function NewRequestScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
   const [car, setCar] = useState("Toyota Camry 2021");
   const [date, setDate] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [photos, setPhotos] = useState<{ url: string; name: string }[]>([]);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    files.forEach((file) => {
+      const url = URL.createObjectURL(file);
+      setPhotos((prev) => [...prev, { url, name: file.name }]);
+    });
+    e.target.value = "";
+  };
+
+  const removePhoto = (idx: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   if (submitted) {
     return (
@@ -312,6 +326,56 @@ function NewRequestScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Описание проблемы</label>
             <textarea className="input-neon w-full px-4 py-3 rounded-xl text-sm resize-none" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Опишите симптомы или что нужно сделать..." />
           </div>
+
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Фото проблемы</label>
+            <input
+              id="photo-upload"
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handlePhotoUpload}
+            />
+            {photos.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                {photos.map((p, idx) => (
+                  <div key={idx} className="relative rounded-xl overflow-hidden border border-neon-cyan/20 aspect-square">
+                    <img src={p.url} alt={p.name} className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => removePhoto(idx)}
+                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-background/80 flex items-center justify-center"
+                    >
+                      <Icon name="X" size={10} className="text-white" />
+                    </button>
+                  </div>
+                ))}
+                {photos.length < 6 && (
+                  <label htmlFor="photo-upload" className="aspect-square rounded-xl border border-dashed border-neon-cyan/30 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-neon-cyan/60 hover:bg-neon-cyan/5 transition-all">
+                    <Icon name="Plus" size={18} className="text-neon-cyan/50" />
+                  </label>
+                )}
+              </div>
+            )}
+            {photos.length === 0 && (
+              <label
+                htmlFor="photo-upload"
+                className="flex flex-col items-center justify-center gap-2 w-full py-5 rounded-xl border border-dashed border-neon-cyan/25 bg-neon-cyan/3 cursor-pointer hover:border-neon-cyan/50 hover:bg-neon-cyan/8 transition-all"
+              >
+                <div className="w-10 h-10 rounded-xl bg-neon-cyan/10 flex items-center justify-center">
+                  <Icon name="Camera" size={20} className="text-neon-cyan" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-white font-medium">Прикрепить фото</p>
+                  <p className="text-xs text-muted-foreground">до 6 фото · JPG, PNG</p>
+                </div>
+              </label>
+            )}
+            {photos.length > 0 && (
+              <p className="text-xs text-muted-foreground font-mono-tech mt-1">{photos.length} фото прикреплено</p>
+            )}
+          </div>
+
           <button disabled={!selectedService} onClick={() => setStep(2)} className="btn-neon py-3 rounded-xl font-bold disabled:opacity-40 disabled:cursor-not-allowed">
             Выбрать мастера →
           </button>
@@ -367,6 +431,21 @@ function NewRequestScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
                   <span className="text-white font-medium">{v}</span>
                 </div>
               ))}
+              {photos.length > 0 && (
+                <div className="flex justify-between text-sm items-start pt-1 border-t border-border mt-1">
+                  <span className="text-muted-foreground">Фото</span>
+                  <div className="flex gap-1">
+                    {photos.slice(0, 3).map((p, i) => (
+                      <img key={i} src={p.url} alt="" className="w-8 h-8 rounded-lg object-cover border border-neon-cyan/20" />
+                    ))}
+                    {photos.length > 3 && (
+                      <div className="w-8 h-8 rounded-lg bg-neon-cyan/10 border border-neon-cyan/20 flex items-center justify-center text-xs font-bold text-neon-cyan">
+                        +{photos.length - 3}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div>
