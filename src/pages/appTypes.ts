@@ -6,7 +6,31 @@ export const API = {
   submitBid:        "https://functions.poehali.dev/18647c14-ab2a-4a4e-ae2e-ca2d139dfe20",
   decodeVin:        "https://functions.poehali.dev/50d346e2-4e25-47c2-bdc1-aa10367a98ff",
   getNotifications: "https://functions.poehali.dev/1fe02ff1-664e-4fd7-888a-e1f1f3d3df07",
+  auth:             "https://functions.poehali.dev/50d346e2-4e25-47c2-bdc1-aa10367a98ff",
 };
+
+// ─── Auth helpers ─────────────────────────────────────────────────────────────
+
+export interface AuthUser {
+  id: number;
+  name: string;
+  phone: string;
+  role: "client" | "master";
+  master_id: number | null;
+  token: string;
+}
+
+const AUTH_KEY = "autotech_user_v1";
+
+export function getStoredUser(): AuthUser | null {
+  try { return JSON.parse(localStorage.getItem(AUTH_KEY) || "null"); } catch { return null; }
+}
+export function storeUser(user: AuthUser) {
+  localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+}
+export function clearUser() {
+  localStorage.removeItem(AUTH_KEY);
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

@@ -2,32 +2,51 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 
 import {
-  API, Screen,
+  API, Screen, AuthUser,
   notifications, navItems, screenTitles,
+  getStoredUser, clearUser,
 } from "./appTypes";
 
 import { HomeScreen, HistoryScreen, ChatScreen, ReviewsScreen, AnalyticsScreen } from "./HomeScreens";
 import { NewRequestScreen, NotificationsScreen, ProfileScreen } from "./RequestScreens";
+import AuthScreen from "./AuthScreen";
 
 export default function Index() {
+  const [user, setUser] = useState<AuthUser | null>(() => getStoredUser());
   const [screen, setScreen] = useState<Screen>("home");
   const [targetMasterId, setTargetMasterId] = useState<number | null>(null);
   const [unreadCount, setUnreadCount] = useState(notifications.filter(n => !n.read).length);
 
   useEffect(() => {
-    fetch(`${API.getNotifications}?master_id=1`)
+    if (!user) return;
+    const masterId = user.master_id ?? (user.role === "master" ? user.id : null);
+    if (!masterId) return;
+    fetch(`${API.getNotifications}?master_id=${masterId}`)
       .then(r => r.json())
       .then(raw => {
         const d = typeof raw === "string" ? JSON.parse(raw) : raw;
         if (typeof d.unread === "number") setUnreadCount(d.unread);
       })
       .catch(() => {});
-  }, [screen]);
+  }, [screen, user]);
 
   const goToNewRequest = (masterId?: number) => {
     setTargetMasterId(masterId ?? null);
     setScreen("new-request");
   };
+
+  const handleLogout = () => {
+    clearUser();
+    setUser(null);
+    setScreen("home");
+  };
+
+  // Не авторизован — показываем экран входа
+  if (!user) {
+    return <AuthScreen onAuth={(u) => setUser(u)} />;
+  }
+
+  const initials = user.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
   return (
     <div className="min-h-screen bg-background grid-bg flex justify-center">
@@ -61,20 +80,20 @@ export default function Index() {
               )}
             </button>
             <button onClick={() => setScreen("profile")} className="w-9 h-9 rounded-xl bg-neon-cyan/15 border border-neon-cyan/30 flex items-center justify-center text-xs font-bold text-neon-cyan">
-              МС
+              {initials}
             </button>
           </div>
         </header>
 
         <main className="flex-1 px-4 pt-4 overflow-y-auto" style={{ paddingBottom: "100px" }}>
-          {screen === "home"         && <HomeScreen setScreen={setScreen} goToNewRequest={goToNewRequest} />}
-          {screen === "new-request"  && <NewRequestScreen setScreen={setScreen} targetMasterId={targetMasterId} />}
-          {screen === "history"      && <HistoryScreen setScreen={setScreen} />}
-          {screen === "chat"         && <ChatScreen />}
-          {screen === "profile"      && <ProfileScreen />}
-          {screen === "notifications"&& <NotificationsScreen />}
-          {screen === "reviews"      && <ReviewsScreen />}
-          {screen === "analytics"    && <AnalyticsScreen />}
+          {screen === "home"          && <HomeScreen setScreen={setScreen} goToNewRequest={goToNewRequest} />}
+          {screen === "new-request"   && <NewRequestScreen setScreen={setScreen} targetMasterId={targetMasterId} />}
+          {screen === "history"       && <HistoryScreen setScreen={setScreen} />}
+          {screen === "chat"          && <ChatScreen />}
+          {screen === "profile"       && <ProfileScreen user={user} onLogout={handleLogout} />}
+          {screen === "notifications" && <NotificationsScreen />}
+          {screen === "reviews"       && <ReviewsScreen />}
+          {screen === "analytics"     && <AnalyticsScreen />}
         </main>
 
         <nav className="bottom-nav fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-2 pt-2 pb-4">

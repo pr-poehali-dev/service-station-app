@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Icon from "@/components/ui/icon";
 import {
-  API, Screen, Bid, UserCar,
+  API, Screen, Bid, UserCar, AuthUser,
   masters, notifications, services, CAR_LIST, CAR_COLORS,
   loadUserCars, saveUserCars,
   ApiNotif, formatNotifTime,
@@ -505,7 +505,7 @@ export function NotificationsScreen() {
 
 // ─── ProfileScreen ────────────────────────────────────────────────────────────
 
-export function ProfileScreen() {
+export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
   const [cars, setCars] = useState<UserCar[]>(() => {
     const saved = loadUserCars();
     return saved.length ? saved : [
@@ -549,10 +549,15 @@ export function ProfileScreen() {
     <div className="flex flex-col gap-5 pb-4">
       <div className="relative overflow-hidden rounded-2xl p-5 border border-neon-cyan/20" style={{ background: "linear-gradient(135deg, hsla(185,100%,10%,0.4) 0%, hsla(270,80%,15%,0.3) 100%)" }}>
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-cyan/30 to-accent/30 flex items-center justify-center text-2xl font-black text-white border border-neon-cyan/30 glow-cyan">МС</div>
-          <div>
-            <h2 className="text-lg font-bold text-white">Михаил Семёнов</h2>
-            <p className="text-sm text-muted-foreground">+7 (916) 245-78-32</p>
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-cyan/30 to-accent/30 flex items-center justify-center text-2xl font-black text-white border border-neon-cyan/30 glow-cyan">
+            {user.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+          </div>
+          <div className="flex-1">
+            <h2 className="text-lg font-bold text-white">{user.name}</h2>
+            <p className="text-sm text-muted-foreground">{user.phone}</p>
+            <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${user.role === "master" ? "bg-accent/15 text-accent border border-accent/30" : "bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/20"}`}>
+              {user.role === "master" ? "Мастер" : "Клиент"}
+            </span>
           </div>
         </div>
       </div>
@@ -689,13 +694,14 @@ export function ProfileScreen() {
       <div>
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-3">Настройки</h3>
         {[
-          { icon: "Bell", label: "Уведомления", value: "Включены", danger: false },
-          { icon: "Globe", label: "Язык", value: "Русский", danger: false },
-          { icon: "Shield", label: "Безопасность", value: "", danger: false },
-          { icon: "HelpCircle", label: "Поддержка", value: "", danger: false },
-          { icon: "LogOut", label: "Выйти", value: "", danger: true },
+          { icon: "Bell", label: "Уведомления", value: "Включены", danger: false, action: null },
+          { icon: "Globe", label: "Язык", value: "Русский", danger: false, action: null },
+          { icon: "Shield", label: "Безопасность", value: "", danger: false, action: null },
+          { icon: "HelpCircle", label: "Поддержка", value: "", danger: false, action: null },
+          { icon: "LogOut", label: "Выйти", value: "", danger: true, action: onLogout },
         ].map((item) => (
-          <div key={item.label} className="flex items-center gap-3 py-3 border-b border-border last:border-0">
+          <div key={item.label} onClick={item.action ?? undefined}
+            className={`flex items-center gap-3 py-3 border-b border-border last:border-0 ${item.action ? "cursor-pointer active:opacity-70" : ""}`}>
             <Icon name={item.icon} size={18} className={item.danger ? "text-destructive" : "text-neon-cyan"} />
             <span className={`flex-1 text-sm font-medium ${item.danger ? "text-destructive" : "text-white"}`}>{item.label}</span>
             {item.value && <span className="text-xs text-muted-foreground">{item.value}</span>}

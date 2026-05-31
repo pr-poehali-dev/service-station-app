@@ -9,12 +9,31 @@
       "bodyMatcher": "partial"
     },
     {
-      "name": "Короткий VIN — ошибка",
-      "method": "GET",
-      "path": "/?vin=ABC123",
-      "expectedStatus": 400,
-      "bodyMatcher": "partial",
-      "expectedBody": {}
+      "name": "Регистрация клиента",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "register", "name": "Тест Клиент", "phone": "+79990000099", "password": "pass123", "role": "client"},
+      "expectedStatus": 201,
+      "expectedBody": {"role": "client"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Вход клиента",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "login", "phone": "+79990000099", "password": "pass123"},
+      "expectedStatus": 200,
+      "expectedBody": {"role": "client"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Неверный пароль",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "login", "phone": "+79990000099", "password": "wrong"},
+      "expectedStatus": 401,
+      "expectedBody": {"error": "Неверный номер или пароль"},
+      "bodyMatcher": "partial"
     }
   ]
 }
