@@ -7,6 +7,22 @@
       "expectedStatus": 200,
       "expectedBody": { "bids_count": 1 },
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Входящие заявки для мастера",
+      "method": "GET",
+      "path": "/?master_id=1&mode=incoming",
+      "expectedStatus": 200,
+      "expectedBody": { "count": 0 },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Мои отклики мастера",
+      "method": "GET",
+      "path": "/?master_id=1&mode=mybids",
+      "expectedStatus": 200,
+      "expectedBody": { "count": 0 },
+      "bodyMatcher": "partial"
     }
   ]
 }

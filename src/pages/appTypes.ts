@@ -42,7 +42,8 @@ export type Screen =
   | "profile"
   | "notifications"
   | "reviews"
-  | "analytics";
+  | "analytics"
+  | "master-requests";
 
 export interface Master {
   id: number;
@@ -271,4 +272,12 @@ export const screenTitles: Record<Screen, string> = {
   notifications: "Уведомления",
   reviews: "Отзывы",
   analytics: "Аналитика",
+  "master-requests": "Заявки",
 };
+
+export const masterNavItems = [
+  { id: "master-requests", icon: "Inbox",         label: "Заявки" },
+  { id: "analytics",       icon: "BarChart2",     label: "Статистика" },
+  { id: "notifications",   icon: "Bell",          label: "Уведомления" },
+  { id: "profile",         icon: "User",          label: "Профиль" },
+];
