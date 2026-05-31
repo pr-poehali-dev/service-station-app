@@ -910,14 +910,7 @@ function ProfileScreen() {
             <p className="text-xs text-neon-cyan font-mono-tech mt-1">ID: USR-00847</p>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-3 mt-4">
-          {[{ value: "5", label: "Заказов" }, { value: "4.8", label: "Рейтинг" }, { value: "3", label: "Отзыва" }].map(s => (
-            <div key={s.label} className="text-center">
-              <p className="text-xl font-black text-white font-mono-tech">{s.value}</p>
-              <p className="text-xs text-muted-foreground">{s.label}</p>
-            </div>
-          ))}
-        </div>
+
       </div>
 
       {/* Мои автомобили */}
