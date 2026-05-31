@@ -32,7 +32,7 @@ def handler(event: dict, context) -> dict:
 
     cur.execute(
         """
-        SELECT r.id, r.service, r.category, r.car, r.description, r.status, r.created_at
+        SELECT r.id, r.service, r.category, r.car, r.description, r.status, r.created_at, r.target_master_id
         FROM t_p3896276_service_station_app.requests r
         WHERE r.id = %s
         """,
@@ -46,7 +46,7 @@ def handler(event: dict, context) -> dict:
     request_data = {
         "id": req[0], "service": req[1], "category": req[2],
         "car": req[3], "description": req[4], "status": req[5],
-        "created_at": str(req[6]),
+        "created_at": str(req[6]), "target_master_id": req[7],
     }
 
     cur.execute(

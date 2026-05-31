@@ -361,6 +361,7 @@ function NewRequestScreen({ setScreen, targetMasterId }: { setScreen: (s: Screen
   const [notifiedCount, setNotifiedCount] = useState(0);
   const [bids, setBids] = useState<Bid[]>([]);
   const [polling, setPolling] = useState(false);
+  const [requestTargetMasterId, setRequestTargetMasterId] = useState<number | null>(null);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -381,6 +382,9 @@ function NewRequestScreen({ setScreen, targetMasterId }: { setScreen: (s: Screen
       const data = await res.json();
       const parsed = typeof data === "string" ? JSON.parse(data) : data;
       setBids(parsed.bids || []);
+      if (parsed.request?.target_master_id != null) {
+        setRequestTargetMasterId(parsed.request.target_master_id);
+      }
     } catch {
       // ignore polling errors
     }
@@ -501,6 +505,12 @@ function NewRequestScreen({ setScreen, targetMasterId }: { setScreen: (s: Screen
             <div className="flex flex-col gap-3">
               {bids.map((bid, i) => (
                 <div key={bid.bid_id} className="card-neon rounded-xl p-4 animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                  {requestTargetMasterId === bid.master.id && (
+                    <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-accent/10 border border-accent/30 w-fit">
+                      <Icon name="Star" size={12} className="text-accent" />
+                      <span className="text-xs font-semibold text-accent">Персональный запрос</span>
+                    </div>
+                  )}
                   <div className="flex items-start gap-3">
                     <div className="relative">
                       <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold font-mono-tech flex-shrink-0 bg-neon-cyan/15 text-neon-cyan border border-neon-cyan/30">

@@ -53,11 +53,11 @@ def handler(event: dict, context) -> dict:
     cur.execute(
         """
         INSERT INTO t_p3896276_service_station_app.requests
-            (client_id, service, category, car, description, status)
-        VALUES (%s, %s, %s, %s, %s, 'open')
+            (client_id, service, category, car, description, status, target_master_id)
+        VALUES (%s, %s, %s, %s, %s, 'open', %s)
         RETURNING id, created_at
         """,
-        (client_id, service, category, car, description),
+        (client_id, service, category, car, description, master_id or None),
     )
     row = cur.fetchone()
     request_id, created_at = row[0], row[1]
