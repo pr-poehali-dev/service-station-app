@@ -58,7 +58,7 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
           ].map((c) => (
             <button key={c.label} onClick={() => goToNewRequest()} className="card-neon rounded-xl p-3 flex flex-col items-center gap-1.5 hover:scale-105 transition-transform">
               {c.icon === "_chassis" ? (
-                <img src="https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/9f315849-a32a-4163-9c27-c6d8d6a66b18.png"
+                <img src="https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/b3e8f2fc-fe5b-42dd-8794-a42a2cf9ac97.jpg"
                   alt="Ходовая" className="w-5 h-5 object-contain" style={{ filter: "invert(1) sepia(1) saturate(5) hue-rotate(155deg)" }} />
               ) : (
                 <Icon name={c.icon} size={20} className="text-neon-cyan" />
