@@ -13,7 +13,10 @@ import { Stars, Avatar } from "./appHelpers";
 export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScreen: (s: Screen) => void; targetMasterId: number | null; user: AuthUser }) {
   const [selectedService, setSelectedService] = useState("");
   const [description, setDescription] = useState("");
-  const [car, setCar] = useState("");
+  const [car, setCar] = useState(() => {
+    const saved = loadUserCars();
+    return saved.length === 1 ? saved[0].model : "";
+  });
   const [photos, setPhotos] = useState<{ url: string; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
