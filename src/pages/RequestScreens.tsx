@@ -558,9 +558,9 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
           <div className="flex-1">
             <h2 className="text-lg font-bold text-white">{user.name}</h2>
             <p className="text-sm text-muted-foreground">{user.phone}</p>
-            <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${user.role === "master" ? "bg-accent/15 text-accent border border-accent/30" : "bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/20"}`}>
-              {user.role === "master" ? "Мастер" : "Клиент"}
-            </span>
+            {user.role === "master" && (
+              <span className="text-xs px-2 py-0.5 rounded-full mt-1 inline-block bg-accent/15 text-accent border border-accent/30">Мастер</span>
+            )}
           </div>
         </div>
       </div>
