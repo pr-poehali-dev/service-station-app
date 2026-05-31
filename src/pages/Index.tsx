@@ -139,6 +139,55 @@ const services = [
   "Другое",
 ];
 
+const CAR_LIST = [
+  "Toyota Camry 2024","Toyota Camry 2023","Toyota Camry 2022","Toyota Camry 2021","Toyota Camry 2020",
+  "Toyota Corolla 2024","Toyota Corolla 2023","Toyota Corolla 2022","Toyota Corolla 2021",
+  "Toyota RAV4 2024","Toyota RAV4 2023","Toyota RAV4 2022","Toyota RAV4 2021",
+  "Toyota Land Cruiser 2024","Toyota Land Cruiser 2023","Toyota Land Cruiser 200 2021",
+  "Toyota Highlander 2024","Toyota Highlander 2023","Toyota Prado 2023","Toyota Prado 2022",
+  "Kia Rio 2024","Kia Rio 2023","Kia Rio 2022","Kia Rio 2021",
+  "Kia Sportage 2024","Kia Sportage 2023","Kia Sportage 2022",
+  "Kia Sorento 2024","Kia Sorento 2023","Kia Ceed 2023","Kia K5 2023",
+  "Hyundai Solaris 2024","Hyundai Solaris 2023","Hyundai Solaris 2022",
+  "Hyundai Tucson 2024","Hyundai Tucson 2023","Hyundai Tucson 2022",
+  "Hyundai Santa Fe 2023","Hyundai Creta 2024","Hyundai Creta 2023",
+  "BMW 3 Series 2024","BMW 3 Series 2023","BMW 5 Series 2024","BMW 5 Series 2023",
+  "BMW X5 2024","BMW X5 2023","BMW X5 2022","BMW X3 2024","BMW X3 2023",
+  "BMW X6 2024","BMW X6 2023","BMW 7 Series 2024",
+  "Mercedes-Benz E-Class 2024","Mercedes-Benz E-Class 2023",
+  "Mercedes-Benz C-Class 2024","Mercedes-Benz C-Class 2023",
+  "Mercedes-Benz GLE 2024","Mercedes-Benz GLE 2023",
+  "Mercedes-Benz GLC 2024","Mercedes-Benz GLC 2023","Mercedes-Benz S-Class 2024",
+  "Audi A4 2024","Audi A4 2023","Audi A6 2024","Audi A6 2023",
+  "Audi Q5 2024","Audi Q5 2023","Audi Q7 2024","Audi Q7 2023","Audi A3 2024",
+  "Volkswagen Polo 2024","Volkswagen Polo 2023","Volkswagen Polo 2022",
+  "Volkswagen Tiguan 2024","Volkswagen Tiguan 2023","Volkswagen Passat 2024",
+  "Volkswagen Jetta 2023","Volkswagen Touareg 2024",
+  "Lada Vesta 2024","Lada Vesta 2023","Lada Granta 2024","Lada Granta 2023",
+  "Lada XRAY 2022","Lada Niva Legend 2024","Lada Niva Travel 2024",
+  "Nissan Qashqai 2023","Nissan X-Trail 2024","Nissan Murano 2023",
+  "Nissan Juke 2024","Nissan Patrol 2024","Nissan Almera 2022",
+  "Mazda 3 2024","Mazda 6 2023","Mazda CX-5 2024","Mazda CX-5 2023",
+  "Mazda CX-9 2023","Mazda CX-30 2024",
+  "Honda CR-V 2024","Honda CR-V 2023","Honda Accord 2024","Honda Civic 2024",
+  "Mitsubishi Outlander 2024","Mitsubishi Outlander 2023","Mitsubishi ASX 2024",
+  "Mitsubishi Eclipse Cross 2024","Mitsubishi Pajero Sport 2024",
+  "Subaru Outback 2024","Subaru Forester 2024","Subaru XV 2023","Subaru Impreza 2023",
+  "Ford Focus 2022","Ford Explorer 2024","Ford Mustang 2024","Ford Kuga 2023",
+  "Chevrolet Cruze 2022","Chevrolet Captiva 2023","Chevrolet Equinox 2024",
+  "Renault Duster 2022","Renault Logan 2022","Renault Arkana 2023",
+  "Skoda Octavia 2024","Skoda Octavia 2023","Skoda Superb 2024","Skoda Karoq 2024",
+  "Volvo XC60 2024","Volvo XC90 2024","Volvo S60 2024",
+  "Porsche Cayenne 2024","Porsche Macan 2024","Porsche Panamera 2024",
+  "Lexus RX 2024","Lexus RX 2023","Lexus NX 2024","Lexus ES 2024","Lexus LX 2024",
+  "Infiniti QX60 2024","Infiniti FX35 2020","Infiniti Q50 2023",
+  "Jeep Grand Cherokee 2024","Jeep Wrangler 2024","Jeep Compass 2024",
+  "Land Rover Defender 2024","Land Rover Discovery 2024","Range Rover Sport 2024",
+  "Chery Tiggo 7 Pro 2024","Chery Tiggo 8 Pro 2024","Chery Arrizo 8 2024",
+  "Geely Coolray 2024","Geely Atlas Pro 2024","Geely Monjaro 2024",
+  "Haval F7 2024","Haval Jolion 2024","Haval H9 2024",
+];
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const Stars = ({ rating }: { rating: number }) => (
@@ -268,6 +317,12 @@ function NewRequestScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
   const [photos, setPhotos] = useState<{ url: string; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Autocomplete
+  const [carFocused, setCarFocused] = useState(false);
+  const carSuggestions = car.trim().length >= 2
+    ? CAR_LIST.filter(c => c.toLowerCase().includes(car.toLowerCase())).slice(0, 6)
+    : [];
 
   // VIN
   const [vin, setVin] = useState("");
@@ -555,9 +610,38 @@ function NewRequestScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
         )}
       </div>
 
-      <div>
+      <div className="relative">
         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Автомобиль</label>
-        <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={car} onChange={(e) => setCar(e.target.value)} placeholder="Марка, модель, год" />
+        <input
+          className="input-neon w-full px-4 py-3 rounded-xl text-sm"
+          value={car}
+          onChange={(e) => setCar(e.target.value)}
+          onFocus={() => setCarFocused(true)}
+          onBlur={() => setTimeout(() => setCarFocused(false), 150)}
+          placeholder="Начните вводить марку и модель..."
+          autoComplete="off"
+        />
+        {carFocused && carSuggestions.length > 0 && (
+          <div className="absolute z-50 left-0 right-0 mt-1 rounded-xl border border-neon-cyan/20 bg-[hsl(220,20%,8%)] shadow-xl overflow-hidden animate-scale-in">
+            {carSuggestions.map((s, i) => {
+              const idx = s.toLowerCase().indexOf(car.toLowerCase());
+              return (
+                <button
+                  key={i}
+                  onMouseDown={() => { setCar(s); setCarFocused(false); }}
+                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-neon-cyan/10 transition-colors flex items-center gap-3 border-b border-border/40 last:border-0"
+                >
+                  <Icon name="Car" size={14} className="text-neon-cyan/50 flex-shrink-0" />
+                  <span className="text-foreground/70">
+                    {s.slice(0, idx)}
+                    <span className="text-neon-cyan font-semibold">{s.slice(idx, idx + car.length)}</span>
+                    {s.slice(idx + car.length)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div>
