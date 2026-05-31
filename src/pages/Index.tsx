@@ -215,7 +215,7 @@ const Avatar = ({ initials, color = "cyan" }: { initials: string; color?: "cyan"
 
 // ─── Screens ─────────────────────────────────────────────────────────────────
 
-function HomeScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
+function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Screen) => void; goToNewRequest: (masterId?: number) => void }) {
   return (
     <div className="flex flex-col gap-5 pb-4">
       <div className="relative overflow-hidden rounded-2xl p-5 border border-neon-cyan/20" style={{ background: "linear-gradient(135deg, hsla(185,100%,15%,0.3) 0%, hsla(270,80%,20%,0.2) 100%)" }}>
@@ -226,7 +226,7 @@ function HomeScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
           <h2 className="text-2xl font-black text-white leading-tight mb-3">
             Найди мастера<br /><span className="glow-text-cyan text-neon-cyan">за 60 секунд</span>
           </h2>
-          <button onClick={() => setScreen("new-request")} className="btn-neon px-5 py-2.5 rounded-xl text-sm font-bold">
+          <button onClick={() => goToNewRequest()} className="btn-neon px-5 py-2.5 rounded-xl text-sm font-bold">
             + Новый запрос
           </button>
         </div>
@@ -259,7 +259,7 @@ function HomeScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
             { icon: "Circle", label: "Шины" },
             { icon: "MoreHorizontal", label: "Другое" },
           ].map((c) => (
-            <button key={c.label} onClick={() => setScreen("new-request")} className="card-neon rounded-xl p-3 flex flex-col items-center gap-1.5 hover:scale-105 transition-transform">
+            <button key={c.label} onClick={() => goToNewRequest()} className="card-neon rounded-xl p-3 flex flex-col items-center gap-1.5 hover:scale-105 transition-transform">
               <Icon name={c.icon} size={20} className="text-neon-cyan" />
               <span className="text-xs text-foreground/70">{c.label}</span>
             </button>
@@ -299,7 +299,7 @@ function HomeScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
                   </div>
                 </div>
               </div>
-              <button onClick={() => setScreen("new-request")} className="w-full mt-3 py-2 rounded-lg text-xs font-bold btn-neon">
+              <button onClick={() => goToNewRequest(m.id)} className="w-full mt-3 py-2 rounded-lg text-xs font-bold btn-neon">
                 Записаться
               </button>
             </div>
@@ -310,7 +310,7 @@ function HomeScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
   );
 }
 
-function NewRequestScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
+function NewRequestScreen({ setScreen, targetMasterId }: { setScreen: (s: Screen) => void; targetMasterId: number | null }) {
   const [selectedService, setSelectedService] = useState("");
   const [description, setDescription] = useState("");
   const [car, setCar] = useState("");
@@ -406,6 +406,7 @@ function NewRequestScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
           car: car.trim(),
           description,
           client_id: 1,
+          ...(targetMasterId ? { master_id: targetMasterId } : {}),
         }),
       });
       const raw = await res.json();
@@ -560,7 +561,17 @@ function NewRequestScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
     <div className="flex flex-col gap-5 pb-4">
       <div>
         <h2 className="text-lg font-black text-white mb-1">Новый запрос</h2>
-        <p className="text-xs text-muted-foreground">Запрос будет разослан всем мастерам по выбранной категории</p>
+        {targetMasterId ? (() => {
+          const m = masters.find(x => x.id === targetMasterId);
+          return m ? (
+            <div className="flex items-center gap-2 mt-1 px-3 py-2 rounded-xl bg-neon-cyan/5 border border-neon-cyan/20">
+              <Icon name="User" size={14} className="text-neon-cyan flex-shrink-0" />
+              <p className="text-xs text-neon-cyan">Запрос уйдёт напрямую — <span className="font-semibold">{m.name}</span>, {m.station}</p>
+            </div>
+          ) : null;
+        })() : (
+          <p className="text-xs text-muted-foreground">Запрос будет разослан всем мастерам по выбранной категории</p>
+        )}
       </div>
 
       <div>
@@ -1329,7 +1340,13 @@ const screenTitles: Record<Screen, string> = {
 
 export default function Index() {
   const [screen, setScreen] = useState<Screen>("home");
+  const [targetMasterId, setTargetMasterId] = useState<number | null>(null);
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const goToNewRequest = (masterId?: number) => {
+    setTargetMasterId(masterId ?? null);
+    setScreen("new-request");
+  };
 
   return (
     <div className="min-h-screen bg-background grid-bg flex justify-center">
@@ -1369,8 +1386,8 @@ export default function Index() {
         </header>
 
         <main className="flex-1 px-4 pt-4 overflow-y-auto" style={{ paddingBottom: "100px" }}>
-          {screen === "home" && <HomeScreen setScreen={setScreen} />}
-          {screen === "new-request" && <NewRequestScreen setScreen={setScreen} />}
+          {screen === "home" && <HomeScreen setScreen={setScreen} goToNewRequest={goToNewRequest} />}
+          {screen === "new-request" && <NewRequestScreen setScreen={setScreen} targetMasterId={targetMasterId} />}
           {screen === "history" && <HistoryScreen setScreen={setScreen} />}
           {screen === "chat" && <ChatScreen />}
           {screen === "profile" && <ProfileScreen />}
