@@ -236,14 +236,17 @@ function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Screen) => v
 
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Мастеров", value: "247", icon: "Wrench" },
-          { label: "Станций", value: "38", icon: "Building2" },
-          { label: "Заказов", value: "12K+", icon: "CheckCircle" },
+          { label: "Мастеров", value: "247", icon: "Wrench", color: "text-neon-cyan" },
+          { label: "Станций", value: "38", icon: "Building2", color: "text-accent" },
+          { label: "Заказов", value: "12K+", icon: "CheckCircle", color: "text-neon-orange" },
         ].map((s) => (
-          <div key={s.label} className="card-neon rounded-xl p-3 text-center">
-            <Icon name={s.icon} size={18} className="text-neon-cyan mx-auto mb-1" />
-            <div className="text-lg font-black text-white font-mono-tech">{s.value}</div>
-            <div className="text-xs text-muted-foreground">{s.label}</div>
+          <div key={s.label} className="relative overflow-hidden rounded-2xl p-4 text-center" style={{ background: "hsla(220,20%,9%,0.8)", border: "1px solid hsla(220,20%,20%,0.5)" }}>
+            <div className={`absolute inset-0 opacity-5`} style={{ background: `radial-gradient(circle at 50% 0%, currentColor, transparent 70%)` }} />
+            <div className={`text-2xl font-black font-mono-tech ${s.color}`}>{s.value}</div>
+            <div className="flex items-center justify-center gap-1 mt-1">
+              <Icon name={s.icon} size={11} className="text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">{s.label}</span>
+            </div>
           </div>
         ))}
       </div>
