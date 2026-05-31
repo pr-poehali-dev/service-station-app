@@ -612,6 +612,18 @@ function NewRequestScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
 
       <div className="relative">
         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Автомобиль</label>
+        {/* Быстрый выбор из гаража */}
+        {(() => { const saved = loadUserCars(); return saved.length > 0 ? (
+          <div className="flex gap-2 mb-2 overflow-x-auto pb-1">
+            {saved.map(uc => (
+              <button key={uc.id} onClick={() => setCar(uc.model)}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-all ${car === uc.model ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border text-muted-foreground hover:border-neon-cyan/30"}`}>
+                <Icon name="Car" size={12} />
+                {uc.model}
+              </button>
+            ))}
+          </div>
+        ) : null; })()}
         <input
           className="input-neon w-full px-4 py-3 rounded-xl text-sm"
           value={car}
@@ -827,14 +839,71 @@ function ChatScreen() {
   );
 }
 
+interface UserCar {
+  id: string;
+  model: string;
+  plate: string;
+  color: string;
+}
+
+const CAR_COLORS = ["Белый","Чёрный","Серый","Серебристый","Красный","Синий","Зелёный","Бежевый","Коричневый","Жёлтый","Оранжевый","Другой"];
+
+const userCarsKey = "user_cars_v1";
+function loadUserCars(): UserCar[] {
+  try { return JSON.parse(localStorage.getItem(userCarsKey) || "[]"); } catch { return []; }
+}
+function saveUserCars(cars: UserCar[]) {
+  localStorage.setItem(userCarsKey, JSON.stringify(cars));
+}
+
 function ProfileScreen() {
+  const [cars, setCars] = useState<UserCar[]>(() => {
+    const saved = loadUserCars();
+    return saved.length ? saved : [
+      { id: "1", model: "Toyota Camry 2021", plate: "А 847 МС 777", color: "Белый" },
+      { id: "2", model: "BMW X5 2020",       plate: "В 234 КО 750", color: "Серый" },
+    ];
+  });
+
+  const [showForm, setShowForm] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [formModel, setFormModel] = useState("");
+  const [formPlate, setFormPlate] = useState("");
+  const [formColor, setFormColor] = useState("Белый");
+  const [modelFocused, setModelFocused] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const modelSuggestions = formModel.trim().length >= 2
+    ? CAR_LIST.filter(c => c.toLowerCase().includes(formModel.toLowerCase())).slice(0, 6)
+    : [];
+
+  const openAdd = () => {
+    setEditId(null); setFormModel(""); setFormPlate(""); setFormColor("Белый"); setShowForm(true);
+  };
+  const openEdit = (car: UserCar) => {
+    setEditId(car.id); setFormModel(car.model); setFormPlate(car.plate); setFormColor(car.color); setShowForm(true);
+  };
+  const handleSave = () => {
+    if (!formModel.trim()) return;
+    let updated: UserCar[];
+    if (editId) {
+      updated = cars.map(c => c.id === editId ? { ...c, model: formModel.trim(), plate: formPlate.trim(), color: formColor } : c);
+    } else {
+      updated = [...cars, { id: Date.now().toString(), model: formModel.trim(), plate: formPlate.trim(), color: formColor }];
+    }
+    setCars(updated); saveUserCars(updated); setShowForm(false);
+  };
+  const handleDelete = (id: string) => {
+    const updated = cars.filter(c => c.id !== id);
+    setCars(updated); saveUserCars(updated); setDeleteId(null);
+  };
+
   return (
     <div className="flex flex-col gap-5 pb-4">
+      {/* Шапка */}
       <div className="relative overflow-hidden rounded-2xl p-5 border border-neon-cyan/20" style={{ background: "linear-gradient(135deg, hsla(185,100%,10%,0.4) 0%, hsla(270,80%,15%,0.3) 100%)" }}>
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-cyan/30 to-accent/30 flex items-center justify-center text-2xl font-black text-white border border-neon-cyan/30 glow-cyan">
-            МС
-          </div>
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-cyan/30 to-accent/30 flex items-center justify-center text-2xl font-black text-white border border-neon-cyan/30 glow-cyan">МС</div>
           <div>
             <h2 className="text-lg font-bold text-white">Михаил Семёнов</h2>
             <p className="text-sm text-muted-foreground">+7 (916) 245-78-32</p>
@@ -851,37 +920,137 @@ function ProfileScreen() {
         </div>
       </div>
 
+      {/* Мои автомобили */}
       <div>
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">Мои автомобили</h3>
-          <span className="text-xs text-neon-cyan">+ Добавить</span>
+          <button onClick={openAdd} className="flex items-center gap-1 text-xs text-neon-cyan font-semibold hover:text-neon-cyan/70 transition-colors">
+            <Icon name="Plus" size={13} />
+            Добавить
+          </button>
         </div>
-        {[
-          { name: "Toyota Camry", year: "2021", plate: "А 847 МС 777", color: "Белый" },
-          { name: "BMW X5", year: "2020", plate: "В 234 КО 750", color: "Серый" },
-        ].map((car) => (
-          <div key={car.plate} className="card-neon rounded-xl p-4 mb-2 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-neon-cyan/10 flex items-center justify-center">
-              <Icon name="Car" size={20} className="text-neon-cyan" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-white text-sm">{car.name} {car.year}</p>
-              <p className="text-xs text-muted-foreground">{car.plate} · {car.color}</p>
-            </div>
-            <Icon name="ChevronRight" size={16} className="text-muted-foreground" />
+
+        {cars.length === 0 ? (
+          <button onClick={openAdd} className="w-full card-neon rounded-xl p-6 flex flex-col items-center gap-2 border-dashed border-neon-cyan/20 text-center hover:border-neon-cyan/40 transition-all">
+            <Icon name="Car" size={28} className="text-neon-cyan/40" />
+            <p className="text-sm text-muted-foreground">Нет автомобилей</p>
+            <p className="text-xs text-neon-cyan">+ Добавить первый</p>
+          </button>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {cars.map((car) => (
+              <div key={car.id} className={`card-neon rounded-xl p-4 flex items-center gap-3 transition-all ${deleteId === car.id ? "border-destructive/50" : ""}`}>
+                <div className="w-10 h-10 rounded-xl bg-neon-cyan/10 flex items-center justify-center flex-shrink-0">
+                  <Icon name="Car" size={20} className="text-neon-cyan" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-white text-sm truncate">{car.model}</p>
+                  <p className="text-xs text-muted-foreground">{[car.plate, car.color].filter(Boolean).join(" · ")}</p>
+                </div>
+                {deleteId === car.id ? (
+                  <div className="flex gap-2 flex-shrink-0">
+                    <button onClick={() => handleDelete(car.id)} className="text-xs px-3 py-1.5 rounded-lg bg-destructive/20 text-destructive border border-destructive/30 font-semibold">Удалить</button>
+                    <button onClick={() => setDeleteId(null)} className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground">Отмена</button>
+                  </div>
+                ) : (
+                  <div className="flex gap-1 flex-shrink-0">
+                    <button onClick={() => openEdit(car)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-neon-cyan/10 transition-colors">
+                      <Icon name="Pencil" size={14} className="text-neon-cyan/60" />
+                    </button>
+                    <button onClick={() => setDeleteId(car.id)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors">
+                      <Icon name="Trash2" size={14} className="text-destructive/60" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
+      {/* Форма добавления / редактирования */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "hsla(220,20%,3%,0.7)", backdropFilter: "blur(4px)" }}>
+          <div className="w-full max-w-md bg-[hsl(220,20%,8%)] border border-neon-cyan/20 rounded-t-3xl p-5 animate-slide-in-right" style={{ animation: "slideUp 0.3s ease" }}>
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-base font-bold text-white">{editId ? "Редактировать" : "Добавить автомобиль"}</h3>
+              <button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+                <Icon name="X" size={16} className="text-muted-foreground" />
+              </button>
+            </div>
+
+            {/* Модель с автодополнением */}
+            <div className="relative mb-3">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Марка и модель</label>
+              <input
+                className="input-neon w-full px-4 py-3 rounded-xl text-sm"
+                value={formModel}
+                onChange={(e) => setFormModel(e.target.value)}
+                onFocus={() => setModelFocused(true)}
+                onBlur={() => setTimeout(() => setModelFocused(false), 150)}
+                placeholder="Например: Toyota Camry 2021"
+                autoComplete="off"
+              />
+              {modelFocused && modelSuggestions.length > 0 && (
+                <div className="absolute z-50 left-0 right-0 mt-1 rounded-xl border border-neon-cyan/20 bg-[hsl(220,20%,8%)] shadow-xl overflow-hidden">
+                  {modelSuggestions.map((s, i) => {
+                    const idx = s.toLowerCase().indexOf(formModel.toLowerCase());
+                    return (
+                      <button key={i} onMouseDown={() => { setFormModel(s); setModelFocused(false); }}
+                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-neon-cyan/10 transition-colors flex items-center gap-3 border-b border-border/40 last:border-0">
+                        <Icon name="Car" size={13} className="text-neon-cyan/50 flex-shrink-0" />
+                        <span className="text-foreground/70">
+                          {s.slice(0, idx)}<span className="text-neon-cyan font-semibold">{s.slice(idx, idx + formModel.length)}</span>{s.slice(idx + formModel.length)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Госномер */}
+            <div className="mb-3">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Госномер <span className="normal-case font-normal text-muted-foreground/60">(необязательно)</span></label>
+              <input
+                className="input-neon w-full px-4 py-3 rounded-xl text-sm font-mono tracking-widest uppercase"
+                value={formPlate}
+                onChange={(e) => setFormPlate(e.target.value.toUpperCase())}
+                placeholder="А 000 АА 000"
+                maxLength={12}
+              />
+            </div>
+
+            {/* Цвет */}
+            <div className="mb-5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Цвет</label>
+              <div className="flex flex-wrap gap-2">
+                {CAR_COLORS.map(c => (
+                  <button key={c} onClick={() => setFormColor(c)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${formColor === c ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border text-muted-foreground hover:border-neon-cyan/30"}`}>
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-xl border border-border text-muted-foreground text-sm font-semibold">Отмена</button>
+              <button onClick={handleSave} disabled={!formModel.trim()} className="flex-1 btn-neon py-3 rounded-xl font-bold disabled:opacity-40">
+                {editId ? "Сохранить" : "Добавить"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Способы оплаты */}
       <div>
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">Способы оплаты</h3>
           <span className="text-xs text-neon-cyan">+ Добавить</span>
         </div>
-        {[
-          { type: "Visa", last4: "4842", isDefault: true },
-          { type: "Mir", last4: "9201", isDefault: false },
-        ].map((card) => (
+        {[{ type: "Visa", last4: "4842", isDefault: true }, { type: "Mir", last4: "9201", isDefault: false }].map((card) => (
           <div key={card.last4} className="card-neon rounded-xl p-4 mb-2 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
               <Icon name="CreditCard" size={20} className="text-accent" />
@@ -895,6 +1064,7 @@ function ProfileScreen() {
         ))}
       </div>
 
+      {/* Настройки */}
       <div>
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-3">Настройки</h3>
         {[

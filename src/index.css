@@ -232,6 +232,17 @@
   font-family: "IBM Plex Mono", monospace;
 }
 
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 /* Rating stars */
 .star-filled {
   color: hsl(45, 100%, 55%);
