@@ -653,18 +653,6 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
                 placeholder="А 000 АА 000" maxLength={12} />
             </div>
 
-            <div className="mb-5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Цвет</label>
-              <div className="flex flex-wrap gap-2">
-                {CAR_COLORS.map(c => (
-                  <button key={c} onClick={() => setFormColor(c)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${formColor === c ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border text-muted-foreground hover:border-neon-cyan/30"}`}>
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             <div className="flex gap-3">
               <button onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-xl border border-border text-muted-foreground text-sm font-semibold">Отмена</button>
               <button onClick={handleSave} disabled={!formModel.trim()} className="flex-1 btn-neon py-3 rounded-xl font-bold disabled:opacity-40">
