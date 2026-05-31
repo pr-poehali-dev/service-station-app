@@ -737,7 +737,7 @@ function NewRequestScreen({ setScreen, targetMasterId }: { setScreen: (s: Screen
         ) : (
           <>
             <Icon name="Send" size={16} />
-            Разослать мастерам
+            Отправить
           </>
         )}
       </button>
