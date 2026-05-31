@@ -103,18 +103,25 @@ export default function Index() {
         </header>
 
         <main className="flex-1 px-4 pt-4 overflow-y-auto" style={{ paddingBottom: "100px" }}>
-          {/* Клиентские экраны */}
-          {screen === "home"             && <HomeScreen setScreen={setScreen} goToNewRequest={goToNewRequest} />}
-          {screen === "new-request"      && <NewRequestScreen setScreen={setScreen} targetMasterId={targetMasterId} user={user} />}
-          {screen === "history"          && <HistoryScreen setScreen={setScreen} user={user} />}
-          {screen === "chat"             && <ChatScreen />}
-          {screen === "reviews"          && <ReviewsScreen />}
-          {/* Мастер */}
-          {screen === "master-requests"  && <MasterRequestsScreen user={user} />}
-          {/* Общие */}
-          {screen === "profile"          && <ProfileScreen user={user} onLogout={handleLogout} />}
-          {screen === "notifications"    && <NotificationsScreen user={user} />}
-          {screen === "analytics"        && <AnalyticsScreen />}
+          {isMaster ? (
+            <>
+              {screen === "master-requests" && <MasterRequestsScreen user={user} />}
+              {screen === "analytics"       && <AnalyticsScreen />}
+              {screen === "notifications"   && <NotificationsScreen user={user} />}
+              {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} />}
+            </>
+          ) : (
+            <>
+              {screen === "home"            && <HomeScreen setScreen={setScreen} goToNewRequest={goToNewRequest} />}
+              {screen === "new-request"     && <NewRequestScreen setScreen={setScreen} targetMasterId={targetMasterId} user={user} />}
+              {screen === "history"         && <HistoryScreen setScreen={setScreen} user={user} />}
+              {screen === "chat"            && <ChatScreen />}
+              {screen === "reviews"         && <ReviewsScreen />}
+              {screen === "notifications"   && <NotificationsScreen user={user} />}
+              {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} />}
+              {screen === "analytics"       && <AnalyticsScreen />}
+            </>
+          )}
         </main>
 
         <nav className="bottom-nav fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-2 pt-2 pb-4">
