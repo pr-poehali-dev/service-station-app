@@ -43,7 +43,7 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-3">Категории услуг</h3>
+        <h3 className="font-semibold uppercase tracking-widest mb-3 text-sm text-gray-200">Категории услуг</h3>
         <div className="grid grid-cols-4 gap-2">
           {[
             { icon: "Droplets", label: "ТО" },
@@ -66,7 +66,7 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
 
       <div>
         <div className="flex justify-between items-center mb-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">Топ мастера</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-gray-200">Топ мастера</h3>
           <span className="text-xs text-neon-cyan font-mono-tech">Все →</span>
         </div>
         <div className="flex flex-col gap-3">
