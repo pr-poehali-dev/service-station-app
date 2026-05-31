@@ -392,22 +392,25 @@ export function NewRequestScreen({ setScreen, targetMasterId }: { setScreen: (s:
 
 // ─── NotificationsScreen ──────────────────────────────────────────────────────
 
-export function NotificationsScreen() {
+export function NotificationsScreen({ user }: { user: AuthUser }) {
   const iconMap: Record<string, string> = {
     status: "Activity", message: "MessageCircle", promo: "Tag",
-    review: "Star", personal_request: "UserCheck",
+    review: "Star", personal_request: "UserCheck", new_bid: "Send",
   };
   const colorMap: Record<string, string> = {
     status: "text-neon-cyan", message: "text-accent", promo: "text-neon-orange",
-    review: "text-yellow-400", personal_request: "text-accent",
+    review: "text-yellow-400", personal_request: "text-accent", new_bid: "text-neon-cyan",
   };
 
-  const [localNotifs, setLocalNotifs] = useState(notifications);
+  const [localNotifs, setLocalNotifs] = useState(user.role === "client" ? notifications : []);
   const [apiNotifs, setApiNotifs] = useState<ApiNotif[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API.getNotifications}?master_id=1`)
+    const param = user.role === "master"
+      ? `master_id=${user.master_id ?? user.id}`
+      : `user_id=${user.id}`;
+    fetch(`${API.getNotifications}?${param}`)
       .then(r => r.json())
       .then(raw => {
         const d = typeof raw === "string" ? JSON.parse(raw) : raw;

@@ -6,12 +6,25 @@
       "path": "/",
       "body": {
         "request_id": 1,
-        "master_id": 2,
-        "price": 3500,
-        "comment": "Сделаем быстро и качественно!"
+        "master_id": 3,
+        "price": 4200,
+        "comment": "Возьмём в работу сегодня!"
       },
       "expectedStatus": 200,
-      "expectedBody": { "bid_id": "number" },
+      "expectedBody": { "master_name": "string" },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Повторный отклик — конфликт",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "request_id": 1,
+        "master_id": 3,
+        "price": 4200
+      },
+      "expectedStatus": 409,
+      "expectedBody": { "error": "string" },
       "bodyMatcher": "partial"
     }
   ]

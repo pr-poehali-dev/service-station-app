@@ -1,10 +1,12 @@
 """
 Мастер оставляет отклик на запрос клиента с предложенной ценой.
+После отклика клиенту автоматически отправляется уведомление.
 """
 import json
 import os
 import psycopg2
 
+SCHEMA = "t_p3896276_service_station_app"
 CORS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -32,8 +34,9 @@ def handler(event: dict, context) -> dict:
     conn = psycopg2.connect(os.environ["DATABASE_URL"])
     cur = conn.cursor()
 
+    # Проверяем запрос и получаем client_id за один запрос
     cur.execute(
-        "SELECT status FROM t_p3896276_service_station_app.requests WHERE id = %s",
+        f"SELECT status, client_id, service FROM {SCHEMA}.requests WHERE id = %s",
         (request_id,),
     )
     row = cur.fetchone()
@@ -44,18 +47,21 @@ def handler(event: dict, context) -> dict:
         cur.close(); conn.close()
         return {"statusCode": 409, "headers": CORS, "body": json.dumps({"error": "Запрос уже закрыт"})}
 
+    client_id = row[1]
+    service_name = row[2]
+
     cur.execute(
-        "SELECT id FROM t_p3896276_service_station_app.bids WHERE request_id = %s AND master_id = %s",
+        f"SELECT id FROM {SCHEMA}.bids WHERE request_id = %s AND master_id = %s",
         (request_id, master_id),
     )
     if cur.fetchone():
         cur.close(); conn.close()
         return {"statusCode": 409, "headers": CORS, "body": json.dumps({"error": "Вы уже откликались на этот запрос"})}
 
+    # Создаём отклик
     cur.execute(
-        """
-        INSERT INTO t_p3896276_service_station_app.bids
-            (request_id, master_id, price, comment, status)
+        f"""
+        INSERT INTO {SCHEMA}.bids (request_id, master_id, price, comment, status)
         VALUES (%s, %s, %s, %s, 'pending')
         RETURNING id, created_at
         """,
@@ -63,11 +69,29 @@ def handler(event: dict, context) -> dict:
     )
     bid_id, created_at = cur.fetchone()
 
+    # Получаем данные мастера
     cur.execute(
-        "SELECT name, station FROM t_p3896276_service_station_app.masters WHERE id = %s",
+        f"SELECT name, station FROM {SCHEMA}.masters WHERE id = %s",
         (master_id,),
     )
     master = cur.fetchone()
+    master_name = master[0] if master else "Мастер"
+    station = master[1] if master else ""
+
+    # Уведомляем клиента, если есть client_id
+    if client_id:
+        price_fmt = f"{int(price):,}".replace(",", " ") + " ₽"
+        notif_text = f"{master_name} ({station}) предлагает {price_fmt}"
+        if comment:
+            notif_text += f" — «{comment[:80]}»"
+        cur.execute(
+            f"""
+            INSERT INTO {SCHEMA}.notifications
+                (user_id, type, title, text, request_id)
+            VALUES (%s, 'new_bid', %s, %s, %s)
+            """,
+            (client_id, f"Новый отклик на «{service_name}»", notif_text, request_id),
+        )
 
     conn.commit()
     cur.close()
@@ -79,10 +103,10 @@ def handler(event: dict, context) -> dict:
         "body": json.dumps({
             "bid_id": bid_id,
             "request_id": request_id,
-            "master_name": master[0] if master else "",
-            "station": master[1] if master else "",
+            "master_name": master_name,
+            "station": station,
             "price": price,
             "comment": comment,
             "created_at": str(created_at),
-        }),
+        }, ensure_ascii=False),
     }

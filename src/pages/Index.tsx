@@ -24,9 +24,10 @@ export default function Index() {
 
   useEffect(() => {
     if (!user) return;
-    const masterId = user.master_id ?? (user.role === "master" ? user.id : null);
-    if (!masterId) return;
-    fetch(`${API.getNotifications}?master_id=${masterId}`)
+    const param = user.role === "master"
+      ? `master_id=${user.master_id ?? user.id}`
+      : `user_id=${user.id}`;
+    fetch(`${API.getNotifications}?${param}`)
       .then(r => r.json())
       .then(raw => {
         const d = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -112,7 +113,7 @@ export default function Index() {
           {screen === "master-requests"  && <MasterRequestsScreen user={user} />}
           {/* Общие */}
           {screen === "profile"          && <ProfileScreen user={user} onLogout={handleLogout} />}
-          {screen === "notifications"    && <NotificationsScreen />}
+          {screen === "notifications"    && <NotificationsScreen user={user} />}
           {screen === "analytics"        && <AnalyticsScreen />}
         </main>
 
