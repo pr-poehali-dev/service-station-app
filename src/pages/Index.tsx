@@ -907,7 +907,7 @@ function ProfileScreen() {
           <div>
             <h2 className="text-lg font-bold text-white">Михаил Семёнов</h2>
             <p className="text-sm text-muted-foreground">+7 (916) 245-78-32</p>
-            <p className="text-xs text-neon-cyan font-mono-tech mt-1">ID: USR-00847</p>
+
           </div>
         </div>
 
