@@ -259,6 +259,7 @@ function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Screen) => v
             { icon: "Wind", label: "Климат" },
             { icon: "Settings", label: "Двигатель" },
             { icon: "Circle", label: "Шины" },
+            { icon: "Languages", label: "Русификация" },
             { icon: "MoreHorizontal", label: "Другое" },
           ].map((c) => (
             <button key={c.label} onClick={() => goToNewRequest()} className="card-neon rounded-xl p-3 flex flex-col items-center gap-1.5 hover:scale-105 transition-transform">
