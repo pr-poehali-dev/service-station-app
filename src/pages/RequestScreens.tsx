@@ -528,12 +528,30 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
   const [modelFocused, setModelFocused] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  const [formVin, setFormVin] = useState("");
+  const [formVinLoading, setFormVinLoading] = useState(false);
+  const [formVinError, setFormVinError] = useState("");
+
+  const handleFormVinDecode = async () => {
+    const cleaned = formVin.trim().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, "");
+    if (cleaned.length !== 17) { setFormVinError("VIN должен содержать 17 символов"); return; }
+    setFormVinLoading(true); setFormVinError("");
+    try {
+      const res = await fetch(`${API.decodeVin}?vin=${cleaned}`);
+      const raw = await res.json();
+      const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (!res.ok || data.error) { setFormVinError(data.error || "VIN не распознан"); }
+      else { setFormModel(data.car); }
+    } catch { setFormVinError("Ошибка соединения"); }
+    finally { setFormVinLoading(false); }
+  };
+
   const modelSuggestions = formModel.trim().length >= 2
     ? CAR_LIST.filter(c => c.toLowerCase().includes(formModel.toLowerCase())).slice(0, 6)
     : [];
 
-  const openAdd = () => { setEditId(null); setFormModel(""); setFormPlate(""); setFormColor("Белый"); setShowForm(true); };
-  const openEdit = (car: UserCar) => { setEditId(car.id); setFormModel(car.model); setFormPlate(car.plate); setFormColor(car.color); setShowForm(true); };
+  const openAdd = () => { setEditId(null); setFormModel(""); setFormPlate(""); setFormColor("Белый"); setFormVin(""); setFormVinError(""); setShowForm(true); };
+  const openEdit = (car: UserCar) => { setEditId(car.id); setFormModel(car.model); setFormPlate(car.plate); setFormColor(car.color); setFormVin(""); setFormVinError(""); setShowForm(true); };
 
   const handleSave = () => {
     if (!formModel.trim()) return;
@@ -622,6 +640,21 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
               <button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
                 <Icon name="X" size={16} className="text-muted-foreground" />
               </button>
+            </div>
+
+            <div className="mb-3">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Определить по VIN <span className="normal-case font-normal text-muted-foreground/60">(необязательно)</span></label>
+              <div className="flex gap-2">
+                <input className="input-neon flex-1 px-4 py-3 rounded-xl text-sm font-mono tracking-widest uppercase"
+                  value={formVin} onChange={(e) => { setFormVin(e.target.value.toUpperCase()); setFormVinError(""); }}
+                  onKeyDown={(e) => e.key === "Enter" && handleFormVinDecode()}
+                  placeholder="17 символов VIN" maxLength={17} />
+                <button onClick={handleFormVinDecode} disabled={formVinLoading || formVin.length < 17}
+                  className="btn-neon px-4 rounded-xl text-sm font-semibold disabled:opacity-40 flex items-center gap-1 flex-shrink-0">
+                  {formVinLoading ? <div className="w-4 h-4 rounded-full border-2 border-background border-t-transparent animate-spin" /> : <Icon name="Search" size={15} />}
+                </button>
+              </div>
+              {formVinError && <p className="text-xs text-destructive mt-1">{formVinError}</p>}
             </div>
 
             <div className="relative mb-3">
