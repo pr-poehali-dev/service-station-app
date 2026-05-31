@@ -48,7 +48,7 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
           {[
             { icon: "Droplets", label: "ТО" },
             { icon: "Zap", label: "Электрика" },
-            { icon: "Gauge", label: "Ходовая" },
+            { icon: "_chassis", label: "Ходовая" },
             { icon: "Shield", label: "Кузов" },
             { icon: "Wind", label: "Климат" },
             { icon: "Settings", label: "Двигатель" },
@@ -57,7 +57,12 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
             { icon: "MoreHorizontal", label: "Другое" },
           ].map((c) => (
             <button key={c.label} onClick={() => goToNewRequest()} className="card-neon rounded-xl p-3 flex flex-col items-center gap-1.5 hover:scale-105 transition-transform">
-              <Icon name={c.icon} size={20} className="text-neon-cyan" />
+              {c.icon === "_chassis" ? (
+                <img src="https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/9f315849-a32a-4163-9c27-c6d8d6a66b18.png"
+                  alt="Ходовая" className="w-5 h-5 object-contain" style={{ filter: "invert(1) sepia(1) saturate(5) hue-rotate(155deg)" }} />
+              ) : (
+                <Icon name={c.icon} size={20} className="text-neon-cyan" />
+              )}
               <span className="text-xs text-foreground/70">{c.label}</span>
             </button>
           ))}
