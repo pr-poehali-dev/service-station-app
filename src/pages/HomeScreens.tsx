@@ -3,8 +3,8 @@ import Icon from "@/components/ui/icon";
 import {
   Screen, Master, Order,
   masters, orders, reviews, chatMessages,
-  Stars, StatusBadge, Avatar,
 } from "./appTypes";
+import { Stars, StatusBadge, Avatar } from "./appHelpers";
 
 // ─── HomeScreen ───────────────────────────────────────────────────────────────
 

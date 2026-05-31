@@ -3,10 +3,10 @@ import Icon from "@/components/ui/icon";
 import {
   API, Screen, Bid, UserCar,
   masters, notifications, services, CAR_LIST, CAR_COLORS,
-  Stars, Avatar,
   loadUserCars, saveUserCars,
   ApiNotif, formatNotifTime,
 } from "./appTypes";
+import { Stars, Avatar } from "./appHelpers";
 
 // ─── NewRequestScreen ─────────────────────────────────────────────────────────
 
