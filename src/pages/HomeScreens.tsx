@@ -61,8 +61,17 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
                 <img src="https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/b3e8f2fc-fe5b-42dd-8794-a42a2cf9ac97.jpg"
                   alt="Ходовая" className="w-5 h-5 object-contain" style={{ filter: "invert(1) sepia(1) saturate(5) hue-rotate(155deg)" }} />
               ) : c.icon === "_tires" ? (
-                <img src="https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/f29cfc8b-b321-4518-b100-5a58ac5840aa.jpg"
-                  alt="Шины" className="w-5 h-5 object-contain" style={{ filter: "invert(1) sepia(1) saturate(5) hue-rotate(155deg)" }} />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5 text-neon-cyan" style={{ filter: "drop-shadow(0 0 3px currentColor)" }}>
+                  <circle cx="12" cy="12" r="10"/>
+                  <circle cx="12" cy="12" r="7"/>
+                  <circle cx="12" cy="12" r="2.5"/>
+                  <line x1="12" y1="9.5" x2="12" y2="5"/>
+                  <line x1="14.6" y1="10.5" x2="18.3" y2="7.5"/>
+                  <line x1="14.6" y1="13.5" x2="18.3" y2="16.5"/>
+                  <line x1="12" y1="14.5" x2="12" y2="19"/>
+                  <line x1="9.4" y1="13.5" x2="5.7" y2="16.5"/>
+                  <line x1="9.4" y1="10.5" x2="5.7" y2="7.5"/>
+                </svg>
               ) : (
                 <Icon name={c.icon} size={20} className="text-neon-cyan" />
               )}
