@@ -58,10 +58,10 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
           ].map((c) => (
             <button key={c.label} onClick={() => goToNewRequest()} className="card-neon rounded-xl p-3 flex flex-col items-center gap-1.5 hover:scale-105 transition-transform">
               {c.icon === "_chassis" ? (
-                <img src="https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/109cf28f-d38e-4242-9ebc-de7f3315480b.jpg"
-                  alt="Ходовая" className="w-5 h-5 object-contain" style={{ filter: "invert(1) sepia(1) saturate(8) hue-rotate(155deg) brightness(1.5) drop-shadow(0 0 4px #00e5ff)", mixBlendMode: "screen" }} />
+                <img src="https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/b3e8f2fc-fe5b-42dd-8794-a42a2cf9ac97.jpg"
+                  alt="Ходовая" className="w-5 h-5 object-contain" style={{ filter: "invert(1) sepia(1) saturate(5) hue-rotate(155deg)" }} />
               ) : c.icon === "_tires" ? (
-                <img src="https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/a51321df-4e2f-41a8-ad1c-b9496b7dbce2.png"
+                <img src="https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/f29cfc8b-b321-4518-b100-5a58ac5840aa.jpg"
                   alt="Шины" className="w-5 h-5 object-contain" style={{ filter: "invert(1) sepia(1) saturate(5) hue-rotate(155deg)" }} />
               ) : (
                 <Icon name={c.icon} size={20} className="text-neon-cyan" />
