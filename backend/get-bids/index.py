@@ -1,11 +1,14 @@
 """
-Универсальный эндпоинт для заявок и откликов.
+Универсальный эндпоинт для заявок, откликов и автомобилей пользователя.
 GET  /?request_id=N              — отклики по заявке клиента
 GET  /?client_id=N               — история заявок клиента
 GET  /?client_id=N&request_id=N  — детали заявки + отклики (для клиента)
 GET  /?master_id=N&mode=incoming — входящие заявки для мастера
 GET  /?master_id=N&mode=mybids   — история откликов мастера
+GET  /?user_id=N&mode=cars       — список автомобилей пользователя
 POST {action:'accept', bid_id, request_id} — клиент принимает отклик
+POST {action:'add_car', user_id, brand, model, year, vin} — добавить авто
+POST {action:'delete_car', user_id, car_id} — удалить авто
 """
 import json
 import os
@@ -108,6 +111,48 @@ def handler(event: dict, context) -> dict:
 
             conn.commit(); cur.close(); conn.close()
             return ok({"ok": True, "master_name": master_name, "station": station, "price": price})
+
+        if action == "add_car":
+            user_id = body.get("user_id")
+            brand = (body.get("brand") or "").strip()
+            model = body.get("model", "").strip()
+            year = body.get("year")
+            vin = (body.get("vin") or "").strip() or None
+            if not user_id or not brand or not model or not year:
+                cur.close(); conn.close()
+                return err("user_id, brand, model, year обязательны")
+            cur.execute(
+                f"""
+                INSERT INTO {SCHEMA}.user_cars (user_id, brand, model, year, vin)
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING id, brand, model, year, vin, created_at
+                """,
+                (int(user_id), brand, model, int(year), vin),
+            )
+            row = cur.fetchone()
+            car = {"id": row[0], "brand": row[1], "model": row[2], "year": row[3], "vin": row[4], "created_at": str(row[5])}
+            conn.commit(); cur.close(); conn.close()
+            return ok({"car": car})
+
+        if action == "delete_car":
+            car_id = body.get("car_id")
+            user_id = body.get("user_id")
+            if not car_id or not user_id:
+                cur.close(); conn.close()
+                return err("car_id и user_id обязательны")
+            cur.execute(
+                f"SELECT id FROM {SCHEMA}.user_cars WHERE id = %s AND user_id = %s",
+                (int(car_id), int(user_id)),
+            )
+            if not cur.fetchone():
+                cur.close(); conn.close()
+                return err("Автомобиль не найден", 404)
+            cur.execute(
+                f"DELETE FROM {SCHEMA}.user_cars WHERE id = %s AND user_id = %s",
+                (int(car_id), int(user_id)),
+            )
+            conn.commit(); cur.close(); conn.close()
+            return ok({"ok": True})
 
         cur.close(); conn.close()
         return err("Неизвестное действие", 400)
@@ -252,6 +297,27 @@ def handler(event: dict, context) -> dict:
             })
         cur.close(); conn.close()
         return ok({"bids": bids, "count": len(bids)})
+
+    # ── GET: автомобили пользователя ──────────────────────────────────────────
+    user_id = params.get("user_id")
+    if user_id and mode == "cars":
+        cur.execute(
+            f"""
+            SELECT id, brand, model, year, vin, created_at
+            FROM {SCHEMA}.user_cars
+            WHERE user_id = %s
+            ORDER BY created_at DESC
+            """,
+            (int(user_id),),
+        )
+        cols = ["id", "brand", "model", "year", "vin", "created_at"]
+        cars = []
+        for row in cur.fetchall():
+            car = dict(zip(cols, row))
+            car["created_at"] = str(car["created_at"])
+            cars.append(car)
+        cur.close(); conn.close()
+        return ok({"cars": cars})
 
     cur.close(); conn.close()
     return err("Укажите client_id, master_id или request_id")

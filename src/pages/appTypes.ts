@@ -9,6 +9,30 @@ export const API = {
   auth:             "https://functions.poehali.dev/50d346e2-4e25-47c2-bdc1-aa10367a98ff",
 };
 
+export async function fetchUserCars(userId: number): Promise<UserCar[]> {
+  const res = await fetch(`${API.getBids}?user_id=${userId}&mode=cars`);
+  const data = await res.json();
+  return data.cars || [];
+}
+
+export async function addUserCar(userId: number, car: { brand: string; model: string; year: number; vin?: string }): Promise<UserCar> {
+  const res = await fetch(API.getBids, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "add_car", user_id: userId, ...car }),
+  });
+  const data = await res.json();
+  return data.car;
+}
+
+export async function deleteUserCar(userId: number, carId: number): Promise<void> {
+  await fetch(API.getBids, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "delete_car", user_id: userId, car_id: carId }),
+  });
+}
+
 // ─── Auth helpers ─────────────────────────────────────────────────────────────
 
 export interface AuthUser {
@@ -112,10 +136,12 @@ export interface Review {
 }
 
 export interface UserCar {
-  id: string;
+  id: number;
+  brand: string;
   model: string;
-  plate: string;
-  color: string;
+  year: number;
+  vin?: string;
+  created_at?: string;
 }
 
 export interface ApiNotif {
