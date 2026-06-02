@@ -549,15 +549,41 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
   const [masterError, setMasterError] = useState("");
   const [masterSuccess, setMasterSuccess] = useState(false);
 
+  const [masterLoading, setMasterLoading] = useState(false);
+  const [masterLoaded, setMasterLoaded] = useState(false);
+
+  useEffect(() => {
+    if (user.role !== "master" || !user.master_id || masterLoaded) return;
+    setMasterLoaded(true);
+    fetch(`${API.getBids}?master_id=${user.master_id}&mode=master_info`)
+      .then(r => r.json())
+      .then(raw => {
+        const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+        if (data.id) {
+          setMasterStation(data.station || "");
+          setMasterSpecialty(data.specialty || "");
+          setMasterAddress(data.address || "");
+          setMasterPriceFrom(data.price_from ? String(data.price_from) : "");
+        }
+      })
+      .catch(() => { /* ignore */ });
+  }, [user.master_id, user.role, masterLoaded]);
+
   const openEditMaster = async () => {
     if (!user.master_id) return;
-    setMasterError(""); setMasterSuccess(false);
+    setMasterError(""); setMasterSuccess(false); setMasterLoading(true);
     try {
-      const res = await fetch(`${API.getBids}?user_id=${user.id}&mode=cars`);
+      const res = await fetch(`${API.getBids}?master_id=${user.master_id}&mode=master_info`);
       const raw = await res.json();
       const data = typeof raw === "string" ? JSON.parse(raw) : raw;
-      void data;
+      if (res.ok && data.id) {
+        setMasterStation(data.station || "");
+        setMasterSpecialty(data.specialty || "");
+        setMasterAddress(data.address || "");
+        setMasterPriceFrom(data.price_from ? String(data.price_from) : "");
+      }
     } catch { /* ignore */ }
+    finally { setMasterLoading(false); }
     setEditMaster(true);
   };
 
@@ -639,8 +665,11 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
         <div>
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">Моя станция</h3>
-            <button onClick={openEditMaster} className="flex items-center gap-1 text-xs text-neon-cyan font-semibold hover:text-neon-cyan/70 transition-colors">
-              <Icon name="Pencil" size={13} />Редактировать
+            <button onClick={openEditMaster} disabled={masterLoading} className="flex items-center gap-1 text-xs text-neon-cyan font-semibold hover:text-neon-cyan/70 transition-colors disabled:opacity-50">
+              {masterLoading
+                ? <div className="w-3 h-3 rounded-full border-2 border-neon-cyan border-t-transparent animate-spin" />
+                : <Icon name="Pencil" size={13} />}
+              Редактировать
             </button>
           </div>
           <div className="card-neon rounded-xl p-4 flex flex-col gap-2">

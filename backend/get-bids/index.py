@@ -319,5 +319,26 @@ def handler(event: dict, context) -> dict:
         cur.close(); conn.close()
         return ok({"cars": cars})
 
+    # ── GET: данные мастера ───────────────────────────────────────────────────
+    if master_id and mode == "master_info":
+        cur.execute(
+            f"""
+            SELECT id, name, station, specialty, rating, reviews_count,
+                   completed_orders, price_from, online, avatar, address
+            FROM {SCHEMA}.masters WHERE id = %s
+            """,
+            (int(master_id),),
+        )
+        row = cur.fetchone()
+        if not row:
+            cur.close(); conn.close()
+            return err("Мастер не найден", 404)
+        cur.close(); conn.close()
+        return ok({
+            "id": row[0], "name": row[1], "station": row[2], "specialty": row[3],
+            "rating": float(row[4]), "reviews_count": row[5], "completed_orders": row[6],
+            "price_from": row[7], "online": row[8], "avatar": row[9], "address": row[10],
+        })
+
     cur.close(); conn.close()
     return err("Укажите client_id, master_id или request_id")
