@@ -165,5 +165,33 @@ def handler(event: dict, context) -> dict:
         conn.commit(); cur.close(); conn.close()
         return ok({"token": new_token, "id": user_id, "name": name, "phone": phone_db, "role": role, "master_id": master_id})
 
+    # POST action=update_master
+    if action == "update_master":
+        master_id = body.get("master_id")
+        if not master_id:
+            cur.close(); conn.close()
+            return err("master_id обязателен")
+        fields = {}
+        if "station" in body: fields["station"] = (body["station"] or "").strip()
+        if "specialty" in body: fields["specialty"] = (body["specialty"] or "").strip()
+        if "address" in body: fields["address"] = (body["address"] or "").strip() or None
+        if "price_from" in body:
+            try: fields["price_from"] = int(body["price_from"])
+            except (ValueError, TypeError): pass
+        if not fields:
+            cur.close(); conn.close()
+            return err("Нет полей для обновления")
+        set_clause = ", ".join(f"{k} = %s" for k in fields)
+        cur.execute(
+            f"UPDATE {SCHEMA}.masters SET {set_clause} WHERE id = %s RETURNING id, name, station, specialty, address, price_from",
+            (*fields.values(), int(master_id)),
+        )
+        row = cur.fetchone()
+        if not row:
+            cur.close(); conn.close()
+            return err("Мастер не найден", 404)
+        conn.commit(); cur.close(); conn.close()
+        return ok({"id": row[0], "name": row[1], "station": row[2], "specialty": row[3], "address": row[4], "price_from": row[5]})
+
     cur.close(); conn.close()
     return err("Не найдено", 404)

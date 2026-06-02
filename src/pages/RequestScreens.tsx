@@ -538,6 +538,48 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
   const [formVinLoading, setFormVinLoading] = useState(false);
   const [formVinError, setFormVinError] = useState("");
 
+  // ── Редактирование профиля мастера ────────────────────────────────────────
+  const SPECIALTIES = ["ТО", "Двигатели", "Электрика", "Ходовая", "Кузов", "Шиномонтаж", "Русификация"];
+  const [editMaster, setEditMaster] = useState(false);
+  const [masterStation, setMasterStation] = useState("");
+  const [masterSpecialty, setMasterSpecialty] = useState("");
+  const [masterAddress, setMasterAddress] = useState("");
+  const [masterPriceFrom, setMasterPriceFrom] = useState("");
+  const [masterSaving, setMasterSaving] = useState(false);
+  const [masterError, setMasterError] = useState("");
+  const [masterSuccess, setMasterSuccess] = useState(false);
+
+  const openEditMaster = async () => {
+    if (!user.master_id) return;
+    setMasterError(""); setMasterSuccess(false);
+    try {
+      const res = await fetch(`${API.getBids}?user_id=${user.id}&mode=cars`);
+      const raw = await res.json();
+      const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      void data;
+    } catch { /* ignore */ }
+    setEditMaster(true);
+  };
+
+  const handleSaveMaster = async () => {
+    if (!user.master_id) return;
+    setMasterSaving(true); setMasterError(""); setMasterSuccess(false);
+    try {
+      const payload: Record<string, string | number> = { action: "update_master", master_id: user.master_id };
+      if (masterStation.trim()) payload.station = masterStation.trim();
+      if (masterSpecialty) payload.specialty = masterSpecialty;
+      if (masterAddress.trim() !== undefined) payload.address = masterAddress.trim();
+      if (masterPriceFrom) payload.price_from = parseInt(masterPriceFrom) || 0;
+      const res = await fetch(API.auth, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const raw = await res.json();
+      const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (!res.ok) { setMasterError(data.error || "Ошибка"); return; }
+      setMasterSuccess(true);
+      setTimeout(() => { setEditMaster(false); setMasterSuccess(false); }, 1200);
+    } catch { setMasterError("Ошибка соединения"); }
+    finally { setMasterSaving(false); }
+  };
+
   const handleFormVinDecode = async () => {
     const cleaned = formVin.trim().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, "");
     if (cleaned.length !== 17) { setFormVinError("VIN должен содержать 17 символов"); return; }
@@ -591,6 +633,100 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
           </div>
         </div>
       </div>
+
+      {/* Блок мастера */}
+      {user.role === "master" && user.master_id && (
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">Моя станция</h3>
+            <button onClick={openEditMaster} className="flex items-center gap-1 text-xs text-neon-cyan font-semibold hover:text-neon-cyan/70 transition-colors">
+              <Icon name="Pencil" size={13} />Редактировать
+            </button>
+          </div>
+          <div className="card-neon rounded-xl p-4 flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Icon name="Wrench" size={16} className="text-neon-cyan flex-shrink-0" />
+              <p className="text-sm text-white font-medium">{masterStation || "Не указана"}</p>
+            </div>
+            {masterSpecialty && (
+              <div className="flex items-center gap-2">
+                <Icon name="Tag" size={16} className="text-accent flex-shrink-0" />
+                <p className="text-sm text-white">{masterSpecialty}</p>
+              </div>
+            )}
+            {masterAddress && (
+              <div className="flex items-center gap-2">
+                <Icon name="MapPin" size={16} className="text-muted-foreground flex-shrink-0" />
+                <p className="text-sm text-muted-foreground">{masterAddress}</p>
+              </div>
+            )}
+            {masterPriceFrom && (
+              <div className="flex items-center gap-2">
+                <Icon name="Banknote" size={16} className="text-neon-green flex-shrink-0" />
+                <p className="text-sm text-white">от {parseInt(masterPriceFrom).toLocaleString("ru")} ₽</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Модал редактирования мастера */}
+      {editMaster && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "hsla(220,20%,3%,0.8)", backdropFilter: "blur(8px)" }}>
+          <div className="w-full max-w-[430px] bg-[hsl(220,20%,7%)] border border-neon-cyan/20 rounded-t-3xl p-5 animate-scale-in flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-base font-bold text-white">Данные станции</h3>
+              <button onClick={() => setEditMaster(false)} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+                <Icon name="X" size={16} className="text-muted-foreground" />
+              </button>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Название станции</label>
+              <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={masterStation}
+                onChange={(e) => setMasterStation(e.target.value)} placeholder="Например: AutoPro Сервис" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Адрес</label>
+              <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={masterAddress}
+                onChange={(e) => setMasterAddress(e.target.value)} placeholder="Например: ул. Ленина, 15" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Специализация</label>
+              <div className="flex flex-wrap gap-2">
+                {SPECIALTIES.map((s) => (
+                  <button key={s} onClick={() => setMasterSpecialty(s)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${masterSpecialty === s ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border text-muted-foreground hover:border-neon-cyan/30"}`}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Цена от (₽)</label>
+              <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" type="number" value={masterPriceFrom}
+                onChange={(e) => setMasterPriceFrom(e.target.value)} placeholder="Например: 1500" min="0" />
+            </div>
+            {masterError && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-destructive/10 border border-destructive/30">
+                <Icon name="AlertCircle" size={14} className="text-destructive flex-shrink-0" />
+                <p className="text-xs text-destructive">{masterError}</p>
+              </div>
+            )}
+            {masterSuccess && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-neon-cyan/10 border border-neon-cyan/30">
+                <Icon name="CheckCircle" size={14} className="text-neon-cyan flex-shrink-0" />
+                <p className="text-xs text-neon-cyan">Сохранено!</p>
+              </div>
+            )}
+            <button onClick={handleSaveMaster} disabled={masterSaving}
+              className="btn-neon py-3.5 rounded-xl font-bold text-sm disabled:opacity-40 flex items-center justify-center gap-2">
+              {masterSaving
+                ? <><div className="w-4 h-4 rounded-full border-2 border-background border-t-transparent animate-spin" />Сохранение...</>
+                : <><Icon name="Save" size={15} />Сохранить</>}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div>
         <div className="flex justify-between items-center mb-3">
