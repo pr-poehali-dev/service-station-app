@@ -1,0 +1,25 @@
+{
+  "name": "AutoTech — Станции ТО",
+  "short_name": "AutoTech",
+  "description": "Приложение для взаимодействия станций ТО и клиентов",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "orientation": "portrait",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/files/9404ec09-78dc-43f6-b6c8-21d614ed957c.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/files/9404ec09-78dc-43f6-b6c8-21d614ed957c.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
