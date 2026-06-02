@@ -17,6 +17,7 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
     const saved = loadUserCars();
     return saved.length === 1 ? saved[0].model : "";
   });
+  const [city, setCity] = useState("");
   const [photos, setPhotos] = useState<{ url: string; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -95,6 +96,7 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
           car: car.trim(),
           description,
           client_id: user.id,
+          ...(city ? { city } : {}),
           ...(targetMasterId ? { master_id: targetMasterId } : {}),
         }),
       });
@@ -269,6 +271,26 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
           ))}
         </div>
       </div>
+
+      {!targetMasterId && (
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Город</label>
+          <div className="flex flex-wrap gap-2">
+            {["Москва", "Санкт-Петербург", "Казань", "Екатеринбург", "Новосибирск", "Краснодар", "Нижний Новгород", "Ростов-на-Дону", "Уфа", "Самара"].map((c) => (
+              <button key={c} onClick={() => setCity(city === c ? "" : c)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${city === c ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border text-muted-foreground hover:border-neon-cyan/30"}`}>
+                {c}
+              </button>
+            ))}
+          </div>
+          {city && (
+            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+              <Icon name="MapPin" size={11} className="text-neon-cyan" />
+              Мастера из города <span className="text-neon-cyan font-medium">{city}</span>
+            </p>
+          )}
+        </div>
+      )}
 
       <div>
         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Определить по VIN</label>
@@ -544,6 +566,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
   const [masterStation, setMasterStation] = useState("");
   const [masterSpecialty, setMasterSpecialty] = useState("");
   const [masterAddress, setMasterAddress] = useState("");
+  const [masterCity, setMasterCity] = useState("");
   const [masterPriceFrom, setMasterPriceFrom] = useState("");
   const [masterSaving, setMasterSaving] = useState(false);
   const [masterError, setMasterError] = useState("");
@@ -563,6 +586,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
           setMasterStation(data.station || "");
           setMasterSpecialty(data.specialty || "");
           setMasterAddress(data.address || "");
+          setMasterCity(data.city || "");
           setMasterPriceFrom(data.price_from ? String(data.price_from) : "");
         }
       })
@@ -580,6 +604,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
         setMasterStation(data.station || "");
         setMasterSpecialty(data.specialty || "");
         setMasterAddress(data.address || "");
+        setMasterCity(data.city || "");
         setMasterPriceFrom(data.price_from ? String(data.price_from) : "");
       }
     } catch { /* ignore */ }
@@ -595,6 +620,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
       if (masterStation.trim()) payload.station = masterStation.trim();
       if (masterSpecialty) payload.specialty = masterSpecialty;
       if (masterAddress.trim() !== undefined) payload.address = masterAddress.trim();
+      payload.city = masterCity.trim();
       if (masterPriceFrom) payload.price_from = parseInt(masterPriceFrom) || 0;
       const res = await fetch(API.auth, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const raw = await res.json();
@@ -683,6 +709,12 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
                 <p className="text-sm text-white">{masterSpecialty}</p>
               </div>
             )}
+            {masterCity && (
+              <div className="flex items-center gap-2">
+                <Icon name="Building2" size={16} className="text-neon-cyan/70 flex-shrink-0" />
+                <p className="text-sm text-white">{masterCity}</p>
+              </div>
+            )}
             {masterAddress && (
               <div className="flex items-center gap-2">
                 <Icon name="MapPin" size={16} className="text-muted-foreground flex-shrink-0" />
@@ -718,6 +750,17 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Адрес</label>
               <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={masterAddress}
                 onChange={(e) => setMasterAddress(e.target.value)} placeholder="Например: ул. Ленина, 15" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Город</label>
+              <div className="flex flex-wrap gap-2">
+                {["Москва", "Санкт-Петербург", "Казань", "Екатеринбург", "Новосибирск", "Краснодар", "Нижний Новгород", "Ростов-на-Дону", "Уфа", "Самара"].map((c) => (
+                  <button key={c} onClick={() => setMasterCity(masterCity === c ? "" : c)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${masterCity === c ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border text-muted-foreground hover:border-neon-cyan/30"}`}>
+                    {c}
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Специализация</label>
