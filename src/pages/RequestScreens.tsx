@@ -708,6 +708,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
     setCars(updated); saveUserCars(updated); setShowForm(false);
   };
 
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => localStorage.getItem("notif_enabled") !== "false");
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [cpCurrent, setCpCurrent] = useState("");
   const [cpNew, setCpNew] = useState("");
@@ -996,8 +997,16 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
 
       <div>
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-3">Настройки</h3>
+
+        <div className="flex items-center gap-3 py-3 border-b border-border cursor-pointer" onClick={() => setNotificationsEnabled(p => { const next = !p; localStorage.setItem("notif_enabled", String(next)); return next; })}>
+          <Icon name={notificationsEnabled ? "Bell" : "BellOff"} size={18} className="text-neon-cyan" />
+          <span className="flex-1 text-sm font-medium text-white">Уведомления</span>
+          <div className={`w-11 h-6 rounded-full transition-colors relative ${notificationsEnabled ? "bg-neon-cyan" : "bg-secondary border border-border"}`}>
+            <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${notificationsEnabled ? "left-5" : "left-0.5"}`} />
+          </div>
+        </div>
+
         {[
-          { icon: "Bell", label: "Уведомления", value: "Включены", danger: false, action: null },
           { icon: "Globe", label: "Язык", value: "Русский", danger: false, action: null },
           { icon: "Shield", label: "Безопасность", value: "Сменить пароль", danger: false, action: () => setShowChangePassword(true) },
           { icon: "HelpCircle", label: "Поддержка", value: "", danger: false, action: () => window.location.href = `mailto:kafalin@rambler.ru?subject=${encodeURIComponent("Обращение в поддержку AutoTech")}&body=${encodeURIComponent("Опишите вашу проблему или вопрос:\n\n")}` },
