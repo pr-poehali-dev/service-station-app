@@ -124,10 +124,11 @@ def handler(event: dict, context) -> dict:
         if role == "master":
             specialty = (body.get("specialty") or "ТО").strip()
             station = (body.get("station") or "Моя станция").strip()
+            address = (body.get("address") or "").strip() or None
             cur.execute(
-                f"""INSERT INTO {SCHEMA}.masters (name, station, specialty, rating, reviews_count, completed_orders, price_from, online, avatar)
-                    VALUES (%s, %s, %s, 5.0, 0, 0, 1000, false, %s) RETURNING id""",
-                (name, station, specialty, name[:2].upper()),
+                f"""INSERT INTO {SCHEMA}.masters (name, station, specialty, rating, reviews_count, completed_orders, price_from, online, avatar, address)
+                    VALUES (%s, %s, %s, 5.0, 0, 0, 1000, false, %s, %s) RETURNING id""",
+                (name, station, specialty, name[:2].upper(), address),
             )
             master_id = cur.fetchone()[0]
         cur.execute(

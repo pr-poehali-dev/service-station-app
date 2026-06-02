@@ -200,6 +200,12 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-white text-sm">{bid.master.name}</p>
                       <p className="text-xs text-muted-foreground">{bid.master.station}</p>
+                      {bid.master.address && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Icon name="MapPin" size={10} className="text-muted-foreground/60 flex-shrink-0" />
+                          <p className="text-xs text-muted-foreground/60">{bid.master.address}</p>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 mt-1">
                         <Stars rating={bid.master.rating} />
                         <span className="text-xs font-mono-tech text-neon-cyan">{bid.master.rating}</span>

@@ -1,0 +1,1 @@
+ALTER TABLE t_p3896276_service_station_app.masters ADD COLUMN address TEXT;

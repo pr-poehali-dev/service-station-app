@@ -215,7 +215,7 @@ def handler(event: dict, context) -> dict:
             f"""
             SELECT b.id, b.price, b.comment, b.status, b.created_at,
                    m.id, m.name, m.station, m.specialty, m.rating,
-                   m.reviews_count, m.completed_orders, m.online, m.avatar
+                   m.reviews_count, m.completed_orders, m.online, m.avatar, m.address
             FROM {SCHEMA}.bids b
             JOIN {SCHEMA}.masters m ON m.id = b.master_id
             WHERE b.request_id = %s
@@ -232,7 +232,7 @@ def handler(event: dict, context) -> dict:
                     "id": row[5], "name": row[6], "station": row[7],
                     "specialty": row[8], "rating": float(row[9]),
                     "reviews_count": row[10], "completed_orders": row[11],
-                    "online": row[12], "avatar": row[13],
+                    "online": row[12], "avatar": row[13], "address": row[14],
                 },
             })
 

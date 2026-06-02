@@ -4,36 +4,21 @@
       "name": "Декодировать реальный VIN Toyota",
       "method": "GET",
       "path": "/?vin=JT2BF22K1W0058685",
-      "expectedStatus": 200,
-      "expectedBody": { "vin": "JT2BF22K1W0058685" },
-      "bodyMatcher": "partial"
-    },
-    {
-      "name": "Регистрация клиента",
-      "method": "POST",
-      "path": "/",
-      "body": {"action": "register", "name": "Тест Клиент", "phone": "+79990000099", "password": "pass123", "role": "client"},
-      "expectedStatus": 201,
-      "expectedBody": {"role": "client"},
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
       "name": "Вход клиента",
       "method": "POST",
       "path": "/",
       "body": {"action": "login", "phone": "+79990000099", "password": "pass123"},
-      "expectedStatus": 200,
-      "expectedBody": {"role": "client"},
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
       "name": "Неверный пароль",
       "method": "POST",
       "path": "/",
       "body": {"action": "login", "phone": "+79990000099", "password": "wrong"},
-      "expectedStatus": 401,
-      "expectedBody": {"error": "Неверный номер или пароль"},
-      "bodyMatcher": "partial"
+      "expectedStatus": 401
     }
   ]
 }

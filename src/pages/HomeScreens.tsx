@@ -146,7 +146,7 @@ interface ApiBid {
   master: {
     id: number; name: string; station: string; specialty: string;
     rating: number; reviews_count: number; completed_orders: number;
-    online: boolean; avatar: string;
+    online: boolean; avatar: string; address?: string | null;
   };
 }
 
@@ -288,6 +288,12 @@ function RequestDetailModal({
                             {isAccepted && <Icon name="CheckCircle" size={14} className="text-neon-cyan flex-shrink-0" />}
                           </div>
                           <p className="text-xs text-muted-foreground">{bid.master.station}</p>
+                          {bid.master.address && (
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <Icon name="MapPin" size={10} className="text-muted-foreground/60 flex-shrink-0" />
+                              <p className="text-xs text-muted-foreground/60">{bid.master.address}</p>
+                            </div>
+                          )}
                           <div className="flex items-center gap-1 mt-1">
                             <span className="text-yellow-400 text-xs">★</span>
                             <span className="text-xs text-muted-foreground">{bid.master.rating} · {bid.master.reviews_count} отзывов</span>

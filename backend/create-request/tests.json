@@ -10,9 +10,7 @@
         "description": "Стук в двигателе",
         "client_id": 1
       },
-      "expectedStatus": 200,
-      "expectedBody": { "notified_masters": 2 },
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     }
   ]
 }

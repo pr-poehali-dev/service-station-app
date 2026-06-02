@@ -19,6 +19,7 @@ export default function AuthScreen({ onAuth }: Props) {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [station, setStation] = useState("");
+  const [address, setAddress] = useState("");
   const [specialty, setSpecialty] = useState("ТО");
   const [showPass, setShowPass] = useState(false);
 
@@ -52,7 +53,7 @@ export default function AuthScreen({ onAuth }: Props) {
     try {
       const bodyData: Record<string, string> = mode === "login"
         ? { action: "login", phone: phoneRaw, password }
-        : { action: "register", phone: phoneRaw, password, name: name.trim(), role, specialty, station: station.trim() || "Моя станция" };
+        : { action: "register", phone: phoneRaw, password, name: name.trim(), role, specialty, station: station.trim() || "Моя станция", address: address.trim() || undefined };
 
       const res = await fetch(API.auth, {
         method: "POST",
@@ -163,6 +164,11 @@ export default function AuthScreen({ onAuth }: Props) {
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Название станции</label>
                 <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={station}
                   onChange={(e) => setStation(e.target.value)} placeholder="Например: AutoPro Сервис" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Адрес</label>
+                <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={address}
+                  onChange={(e) => setAddress(e.target.value)} placeholder="Например: ул. Ленина, 15" />
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Специализация</label>

@@ -64,13 +64,13 @@ def handler(event: dict, context) -> dict:
     request_id, created_at = row[0], row[1]
 
     cols = ["id", "name", "station", "specialty", "rating", "reviews_count",
-            "completed_orders", "price_from", "online", "avatar"]
+            "completed_orders", "price_from", "online", "avatar", "address"]
 
     if master_id:
         cur.execute(
             """
             SELECT id, name, station, specialty, rating, reviews_count,
-                   completed_orders, price_from, online, avatar
+                   completed_orders, price_from, online, avatar, address
             FROM t_p3896276_service_station_app.masters
             WHERE id = %s
             """,
@@ -80,7 +80,7 @@ def handler(event: dict, context) -> dict:
         cur.execute(
             """
             SELECT id, name, station, specialty, rating, reviews_count,
-                   completed_orders, price_from, online, avatar
+                   completed_orders, price_from, online, avatar, address
             FROM t_p3896276_service_station_app.masters
             WHERE specialty = %s
             ORDER BY rating DESC, completed_orders DESC

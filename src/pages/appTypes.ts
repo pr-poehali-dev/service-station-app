@@ -93,6 +93,7 @@ export interface ApiMaster {
   price_from: number;
   online: boolean;
   avatar: string;
+  address?: string | null;
 }
 
 export interface Bid {
