@@ -763,12 +763,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
                 <p className="text-sm text-muted-foreground">{masterAddress}</p>
               </div>
             )}
-            {masterPriceFrom && (
-              <div className="flex items-center gap-2">
-                <Icon name="Banknote" size={16} className="text-neon-green flex-shrink-0" />
-                <p className="text-sm text-white">от {parseInt(masterPriceFrom).toLocaleString("ru")} ₽</p>
-              </div>
-            )}
+
           </div>
         </div>
       )}
