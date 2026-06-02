@@ -10,6 +10,7 @@ import os
 import hashlib
 import secrets
 import urllib.request
+import urllib.parse
 import psycopg2
 
 SCHEMA = "t_p3896276_service_station_app"
@@ -174,8 +175,29 @@ def handler(event: dict, context) -> dict:
         fields = {}
         if "station" in body: fields["station"] = (body["station"] or "").strip()
         if "specialty" in body: fields["specialty"] = (body["specialty"] or "").strip()
-        if "address" in body: fields["address"] = (body["address"] or "").strip() or None
-        if "city" in body: fields["city"] = (body["city"] or "").strip() or None
+        if "address" in body:
+            address_val = (body["address"] or "").strip() or None
+            fields["address"] = address_val
+            # Геокодинг через Nominatim — определяем город по адресу
+            if address_val:
+                try:
+                    geo_url = f"https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(address_val)}&format=json&addressdetails=1&limit=1&accept-language=ru"
+                    geo_req = urllib.request.Request(geo_url, headers={"User-Agent": "AutoTechApp/1.0"})
+                    with urllib.request.urlopen(geo_req, timeout=5) as geo_resp:
+                        geo_data = json.loads(geo_resp.read().decode())
+                    if geo_data:
+                        addr_parts = geo_data[0].get("address", {})
+                        city_val = (
+                            addr_parts.get("city") or
+                            addr_parts.get("town") or
+                            addr_parts.get("village") or
+                            addr_parts.get("municipality") or
+                            addr_parts.get("county")
+                        )
+                        if city_val:
+                            fields["city"] = city_val
+                except Exception:
+                    pass
         if "price_from" in body:
             try: fields["price_from"] = int(body["price_from"])
             except (ValueError, TypeError): pass

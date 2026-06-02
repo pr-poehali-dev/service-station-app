@@ -272,26 +272,6 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
         </div>
       </div>
 
-      {!targetMasterId && (
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Город</label>
-          <div className="flex flex-wrap gap-2">
-            {["Москва", "Санкт-Петербург", "Казань", "Екатеринбург", "Новосибирск", "Краснодар", "Нижний Новгород", "Ростов-на-Дону", "Уфа", "Самара"].map((c) => (
-              <button key={c} onClick={() => setCity(city === c ? "" : c)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${city === c ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border text-muted-foreground hover:border-neon-cyan/30"}`}>
-                {c}
-              </button>
-            ))}
-          </div>
-          {city && (
-            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-              <Icon name="MapPin" size={11} className="text-neon-cyan" />
-              Мастера из города <span className="text-neon-cyan font-medium">{city}</span>
-            </p>
-          )}
-        </div>
-      )}
-
       <div>
         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Определить по VIN</label>
         <div className="flex gap-2">
@@ -619,13 +599,13 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
       const payload: Record<string, string | number> = { action: "update_master", master_id: user.master_id };
       if (masterStation.trim()) payload.station = masterStation.trim();
       if (masterSpecialty) payload.specialty = masterSpecialty;
-      if (masterAddress.trim() !== undefined) payload.address = masterAddress.trim();
-      payload.city = masterCity.trim();
+      payload.address = masterAddress.trim();
       if (masterPriceFrom) payload.price_from = parseInt(masterPriceFrom) || 0;
       const res = await fetch(API.auth, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const raw = await res.json();
       const data = typeof raw === "string" ? JSON.parse(raw) : raw;
       if (!res.ok) { setMasterError(data.error || "Ошибка"); return; }
+      if (data.city) setMasterCity(data.city);
       setMasterSuccess(true);
       setTimeout(() => { setEditMaster(false); setMasterSuccess(false); }, 1200);
     } catch { setMasterError("Ошибка соединения"); }
@@ -750,18 +730,17 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Адрес</label>
               <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={masterAddress}
                 onChange={(e) => setMasterAddress(e.target.value)} placeholder="Например: ул. Ленина, 15" />
+              <p className="text-xs text-muted-foreground/60 mt-1 flex items-center gap-1">
+                <Icon name="Sparkles" size={10} />
+                Город определится автоматически по адресу
+              </p>
             </div>
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Город</label>
-              <div className="flex flex-wrap gap-2">
-                {["Москва", "Санкт-Петербург", "Казань", "Екатеринбург", "Новосибирск", "Краснодар", "Нижний Новгород", "Ростов-на-Дону", "Уфа", "Самара"].map((c) => (
-                  <button key={c} onClick={() => setMasterCity(masterCity === c ? "" : c)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${masterCity === c ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border text-muted-foreground hover:border-neon-cyan/30"}`}>
-                    {c}
-                  </button>
-                ))}
+            {masterCity && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-neon-cyan/5 border border-neon-cyan/20">
+                <Icon name="Building2" size={14} className="text-neon-cyan flex-shrink-0" />
+                <p className="text-xs text-neon-cyan">Город: <span className="font-semibold">{masterCity}</span></p>
               </div>
-            </div>
+            )}
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Специализация</label>
               <div className="flex flex-wrap gap-2">
