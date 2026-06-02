@@ -84,11 +84,12 @@ def handler(event: dict, context) -> dict:
                 SELECT id, name, station, specialty, rating, reviews_count,
                        completed_orders, price_from, online, avatar, address, city
                 FROM t_p3896276_service_station_app.masters
-                WHERE specialty = %s AND city = %s
+                WHERE (specialty = %s OR specialty LIKE %s OR specialty LIKE %s OR specialty LIKE %s)
+                  AND city = %s
                 ORDER BY rating DESC, completed_orders DESC
                 LIMIT 10
                 """,
-                (category, city),
+                (category, f"{category}, %", f"%, {category}, %", f"%, {category}", city),
             )
         else:
             cur.execute(
@@ -96,11 +97,11 @@ def handler(event: dict, context) -> dict:
                 SELECT id, name, station, specialty, rating, reviews_count,
                        completed_orders, price_from, online, avatar, address, city
                 FROM t_p3896276_service_station_app.masters
-                WHERE specialty = %s
+                WHERE specialty = %s OR specialty LIKE %s OR specialty LIKE %s OR specialty LIKE %s
                 ORDER BY rating DESC, completed_orders DESC
                 LIMIT 10
                 """,
-                (category,),
+                (category, f"{category}, %", f"%, {category}, %", f"%, {category}"),
             )
 
     masters = [dict(zip(cols, r)) for r in cur.fetchall()]
