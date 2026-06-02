@@ -1,9 +1,111 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import { AuthUser, API } from "./appTypes";
+import { Stars } from "./appHelpers";
 
-export function AnalyticsScreen() {
+interface Review {
+  id: number;
+  rating: number;
+  text: string | null;
+  created_at: string;
+  client_name: string;
+}
+
+function ReviewsModal({ masterId, onClose }: { masterId: number; onClose: () => void }) {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useState(() => {
+    fetch(`${API.submitBid}?master_id=${masterId}&mode=reviews`)
+      .then(r => r.json())
+      .then(raw => {
+        const d = typeof raw === "string" ? JSON.parse(raw) : raw;
+        setReviews(d.reviews || []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  });
+
+  const avg = reviews.length
+    ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
+    : null;
+
+  function timeAgo(iso: string) {
+    try {
+      const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+      if (diff < 60) return "только что";
+      if (diff < 3600) return `${Math.floor(diff / 60)} мин назад`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)} ч назад`;
+      return `${Math.floor(diff / 86400)} дн назад`;
+    } catch { return ""; }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center"
+      style={{ background: "hsla(0,0%,0%,0.7)", backdropFilter: "blur(8px)" }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="w-full max-w-[430px] rounded-t-2xl flex flex-col max-h-[88vh]"
+        style={{ background: "hsl(220,20%,7%)", border: "1px solid hsla(185,100%,50%,0.2)", borderBottom: "none" }}>
+
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
+          <div>
+            <p className="text-base font-bold text-white">Мои отзывы</p>
+            {avg && <p className="text-xs text-muted-foreground mt-0.5">Средняя оценка: <span className="text-yellow-400 font-semibold">{avg} ★</span></p>}
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+            <Icon name="X" size={16} className="text-muted-foreground" />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 px-5 py-4 flex flex-col gap-3">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-6 h-6 rounded-full border-2 border-neon-cyan border-t-transparent animate-spin" />
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="flex flex-col items-center py-12 gap-3 text-center">
+              <Icon name="Star" size={36} className="text-muted-foreground/30" />
+              <p className="text-sm text-muted-foreground">Отзывов пока нет</p>
+              <p className="text-xs text-muted-foreground/60">Они появятся после выполненных заказов</p>
+            </div>
+          ) : (
+            reviews.map((r) => (
+              <div key={r.id} className="card-neon rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-accent/15 text-accent border border-accent/30 flex items-center justify-center text-xs font-bold">
+                      {r.client_name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <p className="text-sm font-semibold text-white">{r.client_name}</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground/60 font-mono-tech">{timeAgo(r.created_at)}</span>
+                </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Stars rating={r.rating} />
+                  <span className="text-xs font-mono-tech text-yellow-400">{r.rating}.0</span>
+                </div>
+                {r.text && <p className="text-sm text-foreground/80 leading-relaxed">{r.text}</p>}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function AnalyticsScreen({ user }: { user: AuthUser }) {
+  const [showReviews, setShowReviews] = useState(false);
   const months = ["Янв", "Фев", "Мар", "Апр", "Май"];
   const values = [42000, 58000, 51000, 67000, 73500];
   const maxVal = Math.max(...values);
+
+  const metrics = [
+    { label: "Заказов выполнено", value: "24", delta: "+3", icon: "CheckCircle", color: "text-neon-green", onClick: undefined },
+    { label: "Средний чек", value: "3 063 ₽", delta: "+12%", icon: "TrendingUp", color: "text-neon-cyan", onClick: undefined },
+    { label: "Новых клиентов", value: "8", delta: "+2", icon: "Users", color: "text-accent", onClick: undefined },
+    { label: "Рейтинг", value: "4.9 ★", delta: "+0.1", icon: "Star", color: "text-yellow-400", onClick: () => setShowReviews(true) },
+  ];
 
   return (
     <div className="flex flex-col gap-5 pb-4">
@@ -28,18 +130,24 @@ export function AnalyticsScreen() {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        {[
-          { label: "Заказов выполнено", value: "24", delta: "+3", icon: "CheckCircle", color: "text-neon-green" },
-          { label: "Средний чек", value: "3 063 ₽", delta: "+12%", icon: "TrendingUp", color: "text-neon-cyan" },
-          { label: "Новых клиентов", value: "8", delta: "+2", icon: "Users", color: "text-accent" },
-          { label: "Рейтинг", value: "4.9 ★", delta: "+0.1", icon: "Star", color: "text-yellow-400" },
-        ].map((m) => (
-          <div key={m.label} className="card-neon rounded-xl p-4">
-            <Icon name={m.icon} size={18} className={m.color} />
-            <p className="text-xl font-black text-white font-mono-tech mt-2">{m.value}</p>
-            <p className="text-xs text-muted-foreground">{m.label}</p>
-            <p className="text-xs text-neon-green mt-1">↑ {m.delta}</p>
-          </div>
+        {metrics.map((m) => (
+          m.onClick ? (
+            <button key={m.label} onClick={m.onClick}
+              className="card-neon rounded-xl p-4 text-left hover:border-yellow-400/40 transition-all relative">
+              <Icon name={m.icon} size={18} className={m.color} />
+              <p className="text-xl font-black text-white font-mono-tech mt-2">{m.value}</p>
+              <p className="text-xs text-muted-foreground">{m.label}</p>
+              <p className="text-xs text-neon-green mt-1">↑ {m.delta}</p>
+              <Icon name="ChevronRight" size={12} className="absolute top-4 right-4 text-muted-foreground/40" />
+            </button>
+          ) : (
+            <div key={m.label} className="card-neon rounded-xl p-4">
+              <Icon name={m.icon} size={18} className={m.color} />
+              <p className="text-xl font-black text-white font-mono-tech mt-2">{m.value}</p>
+              <p className="text-xs text-muted-foreground">{m.label}</p>
+              <p className="text-xs text-neon-green mt-1">↑ {m.delta}</p>
+            </div>
+          )
         ))}
       </div>
 
@@ -81,6 +189,10 @@ export function AnalyticsScreen() {
           ))}
         </div>
       </div>
+
+      {showReviews && user.master_id && (
+        <ReviewsModal masterId={user.master_id} onClose={() => setShowReviews(false)} />
+      )}
     </div>
   );
 }

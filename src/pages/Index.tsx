@@ -106,7 +106,7 @@ export default function Index() {
           {isMaster ? (
             <>
               {screen === "master-requests" && <MasterRequestsScreen user={user} />}
-              {screen === "analytics"       && <AnalyticsScreen />}
+              {screen === "analytics"       && <AnalyticsScreen user={user} />}
               {screen === "notifications"   && <NotificationsScreen user={user} />}
               {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} />}
             </>
@@ -119,7 +119,7 @@ export default function Index() {
               {screen === "reviews"         && <ReviewsScreen />}
               {screen === "notifications"   && <NotificationsScreen user={user} />}
               {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} />}
-              {screen === "analytics"       && <AnalyticsScreen />}
+              {screen === "analytics"       && <AnalyticsScreen user={user} />}
             </>
           )}
         </main>
