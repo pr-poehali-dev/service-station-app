@@ -1,0 +1,1 @@
+UPDATE t_p3896276_service_station_app.masters SET city = 'Оренбург' WHERE id = 13;

@@ -138,8 +138,10 @@ def handler(event: dict, context) -> dict:
                         city = (
                             addr_parts.get("city") or
                             addr_parts.get("town") or
+                            addr_parts.get("city_district") or
                             addr_parts.get("village") or
                             addr_parts.get("municipality") or
+                            addr_parts.get("state") or
                             addr_parts.get("county")
                         )
                 except Exception:
@@ -208,8 +210,10 @@ def handler(event: dict, context) -> dict:
                         city_val = (
                             addr_parts.get("city") or
                             addr_parts.get("town") or
+                            addr_parts.get("city_district") or
                             addr_parts.get("village") or
                             addr_parts.get("municipality") or
+                            addr_parts.get("state") or
                             addr_parts.get("county")
                         )
                         if city_val:
