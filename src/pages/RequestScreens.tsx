@@ -837,6 +837,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
         </div>
       )}
 
+      {user.role !== "master" && (
       <div>
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">Мои автомобили</h3>
@@ -882,6 +883,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
           </div>
         )}
       </div>
+      )}
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "hsla(220,20%,3%,0.8)", backdropFilter: "blur(8px)" }}>
