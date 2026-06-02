@@ -168,7 +168,7 @@ def handler(event: dict, context) -> dict:
             f"""
             SELECT r.id, r.service, r.category, r.car, r.description,
                    r.status, r.created_at, r.target_master_id,
-                   COUNT(b.id) AS bids_count
+                   COUNT(b.id) AS bids_count, r.reviewed
             FROM {SCHEMA}.requests r
             LEFT JOIN {SCHEMA}.bids b ON b.request_id = r.id
             WHERE r.client_id = %s
@@ -185,7 +185,7 @@ def handler(event: dict, context) -> dict:
                 "id": row[0], "service": row[1], "category": row[2],
                 "car": row[3], "description": row[4], "status": row[5],
                 "created_at": str(row[6]), "target_master_id": row[7],
-                "bids_count": row[8],
+                "bids_count": row[8], "reviewed": row[9],
             })
         cur.close(); conn.close()
         return ok({"requests": requests_list, "count": len(requests_list)})
@@ -195,7 +195,7 @@ def handler(event: dict, context) -> dict:
         cur.execute(
             f"""
             SELECT r.id, r.service, r.category, r.car, r.description,
-                   r.status, r.created_at, r.target_master_id
+                   r.status, r.created_at, r.target_master_id, r.reviewed
             FROM {SCHEMA}.requests r WHERE r.id = %s
             """,
             (request_id,),
@@ -208,7 +208,7 @@ def handler(event: dict, context) -> dict:
         request_data = {
             "id": req[0], "service": req[1], "category": req[2],
             "car": req[3], "description": req[4], "status": req[5],
-            "created_at": str(req[6]), "target_master_id": req[7],
+            "created_at": str(req[6]), "target_master_id": req[7], "reviewed": req[8],
         }
 
         cur.execute(

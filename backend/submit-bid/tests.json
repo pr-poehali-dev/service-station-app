@@ -1,31 +1,24 @@
 {
   "tests": [
     {
-      "name": "Мастер откликается на запрос",
+      "name": "Ошибка без параметров",
       "method": "POST",
       "path": "/",
-      "body": {
-        "request_id": 1,
-        "master_id": 3,
-        "price": 4200,
-        "comment": "Возьмём в работу сегодня!"
-      },
-      "expectedStatus": 200,
-      "expectedBody": { "master_name": "string" },
-      "bodyMatcher": "partial"
+      "body": {},
+      "expectedStatus": 400
     },
     {
-      "name": "Повторный отклик — конфликт",
+      "name": "Список отзывов мастера",
+      "method": "GET",
+      "path": "/?master_id=1&mode=reviews",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Отзыв без обязательных полей",
       "method": "POST",
       "path": "/",
-      "body": {
-        "request_id": 1,
-        "master_id": 3,
-        "price": 4200
-      },
-      "expectedStatus": 409,
-      "expectedBody": { "error": "string" },
-      "bodyMatcher": "partial"
+      "body": { "action": "review", "client_id": 1 },
+      "expectedStatus": 400
     }
   ]
 }

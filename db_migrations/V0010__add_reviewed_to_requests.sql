@@ -1,0 +1,1 @@
+ALTER TABLE t_p3896276_service_station_app.requests ADD COLUMN reviewed BOOLEAN DEFAULT FALSE;

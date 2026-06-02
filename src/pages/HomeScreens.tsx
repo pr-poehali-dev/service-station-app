@@ -135,6 +135,7 @@ interface ApiRequest {
   status: string;
   created_at: string;
   bids_count: number;
+  reviewed?: boolean;
 }
 
 interface ApiBid {
@@ -177,6 +178,10 @@ function RequestDetailModal({
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState<number | null>(null);
   const [accepted, setAccepted] = useState<{ master_name: string; price: number } | null>(null);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewSending, setReviewSending] = useState(false);
+  const [reviewDone, setReviewDone] = useState(false);
 
   const load = async () => {
     try {
@@ -207,6 +212,30 @@ function RequestDetailModal({
       }
     } catch { /* silent */ }
     finally { setAccepting(null); }
+  };
+
+  const acceptedBid = bids.find(b => b.status === "accepted");
+
+  const submitReview = async () => {
+    if (!reviewRating || !acceptedBid) return;
+    setReviewSending(true);
+    try {
+      await fetch(API.submitBid, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "review",
+          client_id: user.id,
+          master_id: acceptedBid.master.id,
+          request_id: requestId,
+          rating: reviewRating,
+          text: reviewText.trim() || undefined,
+        }),
+      });
+      setReviewDone(true);
+      load();
+    } catch { /* silent */ }
+    finally { setReviewSending(false); }
   };
 
   return (
@@ -250,6 +279,56 @@ function RequestDetailModal({
             <div className="rounded-xl px-4 py-3 bg-secondary/60 border border-border">
               <p className="text-xs text-muted-foreground mb-0.5">Описание</p>
               <p className="text-sm text-white">{request.description}</p>
+            </div>
+          )}
+
+          {/* Блок отзыва — показывается когда принят мастер и ещё не оставлен отзыв */}
+          {acceptedBid && !request?.reviewed && user.role === "client" && (
+            <div className="rounded-xl p-4 border border-accent/30 bg-accent/5">
+              {reviewDone ? (
+                <div className="flex items-center gap-2">
+                  <Icon name="CheckCircle" size={16} className="text-neon-green" />
+                  <p className="text-sm font-semibold text-neon-green">Спасибо за отзыв!</p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+                    Оцените мастера — {acceptedBid.master.name}
+                  </p>
+                  <div className="flex gap-2 mb-3">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <button key={s} onClick={() => setReviewRating(s)}
+                        className={`text-2xl transition-transform hover:scale-110 ${s <= reviewRating ? "text-yellow-400" : "text-muted-foreground/30"}`}>
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    className="input-neon w-full px-3 py-2.5 rounded-xl text-sm resize-none"
+                    rows={2}
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    placeholder="Комментарий (необязательно)"
+                  />
+                  <button
+                    onClick={submitReview}
+                    disabled={!reviewRating || reviewSending}
+                    className="mt-2 w-full btn-neon py-2.5 rounded-xl text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-2">
+                    {reviewSending
+                      ? <div className="w-4 h-4 rounded-full border-2 border-background border-t-transparent animate-spin" />
+                      : <Icon name="Star" size={14} />}
+                    Отправить оценку
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Уже оценено */}
+          {request?.reviewed && acceptedBid && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary border border-border">
+              <Icon name="Star" size={14} className="text-yellow-400" />
+              <p className="text-xs text-muted-foreground">Вы уже оценили этого мастера</p>
             </div>
           )}
 
