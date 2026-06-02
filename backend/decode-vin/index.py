@@ -234,5 +234,34 @@ def handler(event: dict, context) -> dict:
         conn.commit(); cur.close(); conn.close()
         return ok({"id": row[0], "name": row[1], "station": row[2], "specialty": row[3], "address": row[4], "price_from": row[5], "city": row[6]})
 
+    # ── POST action=change_password ───────────────────────────────────────────
+    if action == "change_password":
+        user_id = body.get("user_id")
+        current_password = body.get("current_password", "")
+        new_password = body.get("new_password", "")
+        if not all([user_id, current_password, new_password]):
+            cur.close(); conn.close()
+            return err("user_id, current_password и new_password обязательны")
+        if len(new_password) < 6:
+            cur.close(); conn.close()
+            return err("Новый пароль должен быть не менее 6 символов")
+        cur.execute(f"SELECT password_hash FROM {SCHEMA}.users WHERE id = %s", (int(user_id),))
+        row = cur.fetchone()
+        if not row:
+            cur.close(); conn.close()
+            return err("Пользователь не найден", 404)
+        stored = row[0]
+        salt, pw_hash = stored.split(":")[:2]
+        if hash_password(current_password, salt) != pw_hash:
+            cur.close(); conn.close()
+            return err("Неверный текущий пароль", 401)
+        new_salt = secrets.token_hex(8)
+        new_hash = hash_password(new_password, new_salt)
+        new_token = make_token()
+        new_stored = f"{new_salt}:{new_hash}:TOKEN:{new_token}"
+        cur.execute(f"UPDATE {SCHEMA}.users SET password_hash = %s WHERE id = %s", (new_stored, int(user_id)))
+        conn.commit(); cur.close(); conn.close()
+        return ok({"ok": True})
+
     cur.close(); conn.close()
     return err("Не найдено", 404)
