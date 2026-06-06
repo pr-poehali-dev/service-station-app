@@ -18,6 +18,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [formModel, setFormModel] = useState("");
+  const [formYear, setFormYear] = useState("");
   const [formPlate, setFormPlate] = useState("");
 
   const [modelFocused, setModelFocused] = useState(false);
@@ -124,16 +125,16 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
     ? CAR_LIST.filter(c => c.toLowerCase().includes(formModel.toLowerCase())).slice(0, 6)
     : [];
 
-  const openAdd = () => { setEditId(null); setFormModel(""); setFormPlate(""); setFormVin(""); setFormVinError(""); setShowForm(true); };
-  const openEdit = (car: UserCar) => { setEditId(car.id); setFormModel(car.model); setFormPlate(car.plate ?? ""); setFormVin(""); setFormVinError(""); setShowForm(true); };
+  const openAdd = () => { setEditId(null); setFormModel(""); setFormYear(""); setFormPlate(""); setFormVin(""); setFormVinError(""); setShowForm(true); };
+  const openEdit = (car: UserCar) => { setEditId(car.id); setFormModel(car.model); setFormYear(car.year ? String(car.year) : ""); setFormPlate(car.plate ?? ""); setFormVin(""); setFormVinError(""); setShowForm(true); };
 
   const handleSave = () => {
     if (!formModel.trim()) return;
     let updated: UserCar[];
     if (editId) {
-      updated = cars.map(c => c.id === editId ? { ...c, model: formModel.trim(), plate: formPlate.trim() } : c);
+      updated = cars.map(c => c.id === editId ? { ...c, model: formModel.trim(), year: formYear ? parseInt(formYear) : undefined, plate: formPlate.trim() } : c);
     } else {
-      updated = [...cars, { id: Date.now().toString(), model: formModel.trim(), plate: formPlate.trim() }];
+      updated = [...cars, { id: Date.now().toString(), model: formModel.trim(), year: formYear ? parseInt(formYear) : undefined, plate: formPlate.trim() }];
     }
     setCars(updated); saveUserCars(updated); setShowForm(false);
   };
@@ -384,11 +385,17 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
 
             <div className="relative mb-3">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Марка и модель</label>
-              <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={formModel}
-                onChange={(e) => setFormModel(e.target.value)}
-                onFocus={() => setModelFocused(true)}
-                onBlur={() => setTimeout(() => setModelFocused(false), 150)}
-                placeholder="Например: Toyota Camry 2021" autoComplete="off" />
+              <div className="flex gap-2">
+                <input className="input-neon flex-1 px-4 py-3 rounded-xl text-sm" value={formModel}
+                  onChange={(e) => setFormModel(e.target.value)}
+                  onFocus={() => setModelFocused(true)}
+                  onBlur={() => setTimeout(() => setModelFocused(false), 150)}
+                  placeholder="Toyota Camry" autoComplete="off" />
+                <input className="input-neon w-24 px-3 py-3 rounded-xl text-sm text-center"
+                  value={formYear}
+                  onChange={(e) => setFormYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                  placeholder="Год" maxLength={4} inputMode="numeric" />
+              </div>
               {modelFocused && modelSuggestions.length > 0 && (
                 <div className="absolute z-50 left-0 right-0 mt-1 rounded-xl border border-neon-cyan/20 bg-[hsl(220,20%,8%)] shadow-xl overflow-hidden">
                   {modelSuggestions.map((s, i) => {
