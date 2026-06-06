@@ -53,17 +53,17 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
             <button key={c.label} onClick={() => goToNewRequest()} className="card-neon rounded-xl p-3 flex flex-col items-center gap-1.5 hover:scale-105 transition-transform">
               {c.icon === "_chassis" ? (
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-neon-cyan" style={{ filter: "drop-shadow(0 0 3px currentColor)" }}>
-                  <rect x="1" y="1.5" width="5" height="3" rx="1"/>
-                  <rect x="18" y="1.5" width="5" height="3" rx="1"/>
-                  <rect x="1" y="19.5" width="5" height="3" rx="1"/>
-                  <rect x="18" y="19.5" width="5" height="3" rx="1"/>
-                  <rect x="6" y="2.5" width="5" height="1" rx="0.5"/>
-                  <rect x="13" y="2.5" width="5" height="1" rx="0.5"/>
-                  <rect x="6" y="20.5" width="5" height="1" rx="0.5"/>
-                  <rect x="13" y="20.5" width="5" height="1" rx="0.5"/>
-                  <circle cx="12" cy="5" r="2"/>
-                  <circle cx="12" cy="19" r="2"/>
-                  <rect x="11.25" y="7" width="1.5" height="10" rx="0.75"/>
+                  <rect x="0" y="1" width="6.5" height="4" rx="1.2"/>
+                  <rect x="17.5" y="1" width="6.5" height="4" rx="1.2"/>
+                  <rect x="0" y="19" width="6.5" height="4" rx="1.2"/>
+                  <rect x="17.5" y="19" width="6.5" height="4" rx="1.2"/>
+                  <rect x="6.5" y="2.5" width="5" height="1" rx="0.5"/>
+                  <rect x="12.5" y="2.5" width="5" height="1" rx="0.5"/>
+                  <rect x="6.5" y="20.5" width="5" height="1" rx="0.5"/>
+                  <rect x="12.5" y="20.5" width="5" height="1" rx="0.5"/>
+                  <circle cx="12" cy="5" r="2.2"/>
+                  <circle cx="12" cy="19" r="2.2"/>
+                  <rect x="11.2" y="7.2" width="1.6" height="9.6" rx="0.8"/>
                 </svg>
               ) : c.icon === "_tires" ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5 text-neon-cyan" style={{ filter: "drop-shadow(0 0 3px currentColor)" }}>
