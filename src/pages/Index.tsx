@@ -58,7 +58,7 @@ function SplashScreen({ onDone }: { onDone: () => void }) {
           }
         `}</style>
 
-        <p className="text-xs font-mono-tech text-muted-foreground uppercase tracking-widest">Станции ТО</p>
+        <p className="text-xs font-mono-tech text-muted-foreground uppercase tracking-widest">Сервис поиска автоуслуг</p>
 
         <div className="w-48 flex flex-col gap-1.5 mt-2">
           <div className="w-full h-0.5 rounded-full bg-neon-cyan/10 overflow-hidden">
