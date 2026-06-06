@@ -7,8 +7,8 @@ import {
 } from "./appTypes";
 import { Stars } from "./appHelpers";
 
-export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScreen: (s: Screen) => void; targetMasterId: number | null; user: AuthUser }) {
-  const [selectedService, setSelectedService] = useState("");
+export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedService }: { setScreen: (s: Screen) => void; targetMasterId: number | null; user: AuthUser; preselectedService?: string }) {
+  const [selectedService, setSelectedService] = useState(preselectedService ?? "");
   const [description, setDescription] = useState("");
   const userSavedCars = loadUserCars();
   const [car, setCar] = useState(() => {

@@ -83,6 +83,7 @@ export default function Index() {
     getStoredUser()?.role === "master" ? "master-requests" : "home"
   );
   const [targetMasterId, setTargetMasterId] = useState<number | null>(null);
+  const [preselectedService, setPreselectedService] = useState<string>("");
   const [unreadCount, setUnreadCount] = useState(notifications.filter(n => !n.read).length);
 
   useEffect(() => {
@@ -99,8 +100,9 @@ export default function Index() {
       .catch(() => {});
   }, [screen, user]);
 
-  const goToNewRequest = (masterId?: number) => {
+  const goToNewRequest = (masterId?: number, service?: string) => {
     setTargetMasterId(masterId ?? null);
+    setPreselectedService(service ?? "");
     setScreen("new-request");
   };
 
@@ -180,7 +182,7 @@ export default function Index() {
           ) : (
             <>
               {screen === "home"            && <HomeScreen setScreen={setScreen} goToNewRequest={goToNewRequest} />}
-              {screen === "new-request"     && <NewRequestScreen setScreen={setScreen} targetMasterId={targetMasterId} user={user} />}
+              {screen === "new-request"     && <NewRequestScreen setScreen={setScreen} targetMasterId={targetMasterId} user={user} preselectedService={preselectedService} />}
               {screen === "history"         && <HistoryScreen setScreen={setScreen} user={user} />}
               {screen === "chat"            && <ChatScreen />}
               {screen === "reviews"         && <ReviewsScreen />}

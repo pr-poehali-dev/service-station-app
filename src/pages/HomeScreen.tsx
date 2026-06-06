@@ -40,17 +40,17 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
         <h3 className="font-semibold uppercase tracking-widest mb-3 text-sm text-gray-200">Категории услуг</h3>
         <div className="grid grid-cols-4 gap-2">
           {[
-            { icon: "Droplets", label: "ТО" },
-            { icon: "Zap", label: "Электрика" },
-            { icon: "_chassis", label: "Ходовая" },
-            { icon: "Shield", label: "Кузов" },
-            { icon: "Wind", label: "Климат" },
-            { icon: "Settings", label: "Двигатель" },
-            { icon: "_tires", label: "Шины" },
-            { icon: "Languages", label: "Русификация" },
-            { icon: "MoreHorizontal", label: "Другое" },
+            { icon: "Droplets", label: "ТО", service: "Замена масла и фильтров" },
+            { icon: "Zap", label: "Электрика", service: "Электрика" },
+            { icon: "_chassis", label: "Ходовая", service: "Ходовая часть" },
+            { icon: "Shield", label: "Кузов", service: "Кузовные работы" },
+            { icon: "Wind", label: "Климат", service: "Кондиционер" },
+            { icon: "Settings", label: "Двигатель", service: "Диагностика двигателя" },
+            { icon: "_tires", label: "Шины", service: "Шиномонтаж" },
+            { icon: "Languages", label: "Русификация", service: "Русификация" },
+            { icon: "MoreHorizontal", label: "Другое", service: "Другое" },
           ].map((c) => (
-            <button key={c.label} onClick={() => goToNewRequest()} className="card-neon rounded-xl p-3 flex flex-col items-center gap-1.5 hover:scale-105 transition-transform">
+            <button key={c.label} onClick={() => goToNewRequest(undefined, c.service)} className="card-neon rounded-xl p-3 flex flex-col items-center gap-1.5 hover:scale-105 transition-transform">
               {c.icon === "_chassis" ? (
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-neon-cyan">
                   <rect x="0" y="1" width="6.5" height="4" rx="1.2"/>
