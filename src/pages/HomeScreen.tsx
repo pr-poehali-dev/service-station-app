@@ -52,12 +52,18 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
           ].map((c) => (
             <button key={c.label} onClick={() => goToNewRequest()} className="card-neon rounded-xl p-3 flex flex-col items-center gap-1.5 hover:scale-105 transition-transform">
               {c.icon === "_chassis" ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5 text-neon-cyan" style={{ filter: "drop-shadow(0 0 3px currentColor)" }}>
-                  <circle cx="6" cy="17" r="3"/>
-                  <circle cx="18" cy="17" r="3"/>
-                  <path d="M9 17h6"/>
-                  <path d="M3 17V9l3-4h12l3 4v8"/>
-                  <path d="M6 9h12"/>
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-neon-cyan" style={{ filter: "drop-shadow(0 0 3px currentColor)" }}>
+                  <rect x="1" y="1.5" width="5" height="3" rx="1"/>
+                  <rect x="18" y="1.5" width="5" height="3" rx="1"/>
+                  <rect x="1" y="19.5" width="5" height="3" rx="1"/>
+                  <rect x="18" y="19.5" width="5" height="3" rx="1"/>
+                  <rect x="6" y="2.5" width="5" height="1" rx="0.5"/>
+                  <rect x="13" y="2.5" width="5" height="1" rx="0.5"/>
+                  <rect x="6" y="20.5" width="5" height="1" rx="0.5"/>
+                  <rect x="13" y="20.5" width="5" height="1" rx="0.5"/>
+                  <circle cx="12" cy="5" r="2"/>
+                  <circle cx="12" cy="19" r="2"/>
+                  <rect x="11.25" y="7" width="1.5" height="10" rx="0.75"/>
                 </svg>
               ) : c.icon === "_tires" ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5 text-neon-cyan" style={{ filter: "drop-shadow(0 0 3px currentColor)" }}>
