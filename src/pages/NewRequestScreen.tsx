@@ -11,10 +11,11 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
   const [selectedService, setSelectedService] = useState(preselectedService ?? "");
   const [description, setDescription] = useState("");
   const userSavedCars = loadUserCars();
+  const carLabel = (c: typeof userSavedCars[0]) =>
+    [c.brand, c.model].filter(Boolean).join(" ").trim() || c.model;
+
   const [car, setCar] = useState(() => {
-    return userSavedCars.length === 1
-      ? `${userSavedCars[0].brand} ${userSavedCars[0].model}`.trim()
-      : "";
+    return userSavedCars.length === 1 ? carLabel(userSavedCars[0]) : "";
   });
   const [carYear, setCarYear] = useState(() => {
     return userSavedCars.length === 1 && userSavedCars[0].year
@@ -403,8 +404,8 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
         {userSavedCars.length > 1 && (
           <div className="flex flex-wrap gap-2 mb-2">
             {userSavedCars.map((c) => {
-              const label = [c.brand, c.model, c.year ?? ""].filter(Boolean).join(" ");
-              const value = `${c.brand} ${c.model}`.trim();
+              const value = carLabel(c);
+              const label = [value, c.year ?? ""].filter(Boolean).join(" ");
               const active = car.trim().toLowerCase() === value.toLowerCase();
               return (
                 <button key={c.id} type="button"
