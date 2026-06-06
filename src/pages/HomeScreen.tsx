@@ -52,7 +52,7 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
           ].map((c) => (
             <button key={c.label} onClick={() => goToNewRequest()} className="card-neon rounded-xl p-3 flex flex-col items-center gap-1.5 hover:scale-105 transition-transform">
               {c.icon === "_chassis" ? (
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-neon-cyan" style={{ filter: "drop-shadow(0 0 3px currentColor)" }}>
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-neon-cyan">
                   <rect x="0" y="1" width="6.5" height="4" rx="1.2"/>
                   <rect x="17.5" y="1" width="6.5" height="4" rx="1.2"/>
                   <rect x="0" y="19" width="6.5" height="4" rx="1.2"/>
@@ -66,7 +66,7 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
                   <rect x="11.2" y="7.2" width="1.6" height="9.6" rx="0.8"/>
                 </svg>
               ) : c.icon === "_tires" ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5 text-neon-cyan" style={{ filter: "drop-shadow(0 0 3px currentColor)" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5 text-neon-cyan">
                   <circle cx="12" cy="12" r="10"/>
                   <circle cx="12" cy="12" r="7"/>
                   <circle cx="12" cy="12" r="2.5"/>
