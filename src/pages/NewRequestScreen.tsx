@@ -398,7 +398,7 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
         {userSavedCars.length > 1 && (
           <div className="flex flex-wrap gap-2 mb-2">
             {userSavedCars.map((c) => {
-              const label = `${c.brand} ${c.model} ${c.year}`.trim();
+              const label = [c.brand, c.model, c.year ?? ""].filter(Boolean).join(" ");
               const value = `${c.brand} ${c.model}`.trim();
               const active = car.trim().toLowerCase() === value.toLowerCase();
               return (
