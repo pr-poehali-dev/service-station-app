@@ -12,7 +12,59 @@ import { NewRequestScreen, NotificationsScreen, ProfileScreen } from "./RequestS
 import { MasterRequestsScreen } from "./MasterScreens";
 import AuthScreen from "./AuthScreen";
 
+function SplashScreen({ onDone }: { onDone: () => void }) {
+  const [progress, setProgress] = useState(0);
+  const [fading, setFading] = useState(false);
+
+  useEffect(() => {
+    const start = Date.now();
+    const duration = 1800;
+    const frame = () => {
+      const p = Math.min((Date.now() - start) / duration, 1);
+      setProgress(p);
+      if (p < 1) requestAnimationFrame(frame);
+      else { setFading(true); setTimeout(onDone, 400); }
+    };
+    requestAnimationFrame(frame);
+  }, [onDone]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background"
+      style={{ transition: "opacity 0.4s ease", opacity: fading ? 0 : 1 }}
+    >
+      <div className="flex flex-col items-center gap-6">
+        <div className="relative flex items-center justify-center">
+          <div className="absolute w-28 h-28 rounded-full border border-neon-cyan/20 animate-ping" style={{ animationDuration: "2s" }} />
+          <div className="absolute w-24 h-24 rounded-full border border-neon-cyan/30 animate-ping" style={{ animationDuration: "2s", animationDelay: "0.3s" }} />
+          <div className="w-20 h-20 rounded-2xl bg-neon-cyan/10 border border-neon-cyan/40 flex items-center justify-center glow-cyan">
+            <Icon name="Wrench" size={36} className="text-neon-cyan" />
+          </div>
+        </div>
+
+        <div className="flex items-end gap-1">
+          <span className="text-3xl font-black font-mono-tech glow-text-cyan text-neon-cyan tracking-wider">AUTO</span>
+          <span className="text-3xl font-black text-white tracking-wider">TECH</span>
+        </div>
+
+        <p className="text-xs font-mono-tech text-muted-foreground uppercase tracking-widest">Станции ТО</p>
+
+        <div className="w-48 flex flex-col gap-1.5 mt-2">
+          <div className="w-full h-0.5 rounded-full bg-neon-cyan/10 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-neon-cyan transition-none"
+              style={{ width: `${progress * 100}%`, boxShadow: "0 0 8px hsl(185 100% 50%)" }}
+            />
+          </div>
+          <p className="text-xs font-mono-tech text-neon-cyan/50 text-right">{Math.round(progress * 100)}%</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Index() {
+  const [splash, setSplash] = useState(true);
   const [user, setUser] = useState<AuthUser | null>(() => getStoredUser());
   const isMaster = user?.role === "master";
 
@@ -51,6 +103,10 @@ export default function Index() {
     setUser(u);
     setScreen(u.role === "master" ? "master-requests" : "home");
   };
+
+  if (splash) {
+    return <SplashScreen onDone={() => setSplash(false)} />;
+  }
 
   if (!user) {
     return <AuthScreen onAuth={handleAuth} />;
