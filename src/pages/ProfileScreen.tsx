@@ -368,21 +368,6 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
               </button>
             </div>
 
-            <div className="mb-3">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Определить по VIN <span className="normal-case font-normal text-muted-foreground/60">(необязательно)</span></label>
-              <div className="flex gap-2">
-                <input className="input-neon flex-1 px-4 py-3 rounded-xl text-sm font-mono tracking-widest uppercase"
-                  value={formVin} onChange={(e) => { setFormVin(e.target.value.toUpperCase()); setFormVinError(""); }}
-                  onKeyDown={(e) => e.key === "Enter" && handleFormVinDecode()}
-                  placeholder="17 символов VIN" maxLength={17} />
-                <button onClick={handleFormVinDecode} disabled={formVinLoading || formVin.length < 17}
-                  className="btn-neon px-4 rounded-xl text-sm font-semibold disabled:opacity-40 flex items-center gap-1 flex-shrink-0">
-                  {formVinLoading ? <div className="w-4 h-4 rounded-full border-2 border-background border-t-transparent animate-spin" /> : <Icon name="Search" size={15} />}
-                </button>
-              </div>
-              {formVinError && <p className="text-xs text-destructive mt-1">{formVinError}</p>}
-            </div>
-
             <div className="relative mb-3">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Марка и модель</label>
               <div className="flex gap-2">
@@ -412,6 +397,21 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
                   })}
                 </div>
               )}
+            </div>
+
+            <div className="mb-3">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Определить по VIN <span className="normal-case font-normal text-muted-foreground/60">(необязательно)</span></label>
+              <div className="flex gap-2">
+                <input className="input-neon flex-1 px-4 py-3 rounded-xl text-sm font-mono tracking-widest uppercase"
+                  value={formVin} onChange={(e) => { setFormVin(e.target.value.toUpperCase()); setFormVinError(""); }}
+                  onKeyDown={(e) => e.key === "Enter" && handleFormVinDecode()}
+                  placeholder="17 символов VIN" maxLength={17} />
+                <button onClick={handleFormVinDecode} disabled={formVinLoading || formVin.length < 17}
+                  className="btn-neon px-4 rounded-xl text-sm font-semibold disabled:opacity-40 flex items-center gap-1 flex-shrink-0">
+                  {formVinLoading ? <div className="w-4 h-4 rounded-full border-2 border-background border-t-transparent animate-spin" /> : <Icon name="Search" size={15} />}
+                </button>
+              </div>
+              {formVinError && <p className="text-xs text-destructive mt-1">{formVinError}</p>}
             </div>
 
             <div className="mb-3">
