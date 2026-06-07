@@ -88,7 +88,7 @@ export default function AuthScreen({ onAuth }: Props) {
             <span className="text-3xl font-black font-mono-tech glow-text-cyan text-neon-cyan">AUTO</span>
             <span className="text-3xl font-black text-white">TECH</span>
           </div>
-          <p className="text-xs text-muted-foreground font-mono-tech uppercase tracking-widest">Система ТО v2.0</p>
+          <p className="text-xs text-muted-foreground font-mono-tech uppercase tracking-widest">Сборка 1.0</p>
         </div>
 
         {/* Карточка */}
