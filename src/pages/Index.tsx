@@ -11,6 +11,7 @@ import { HomeScreen, HistoryScreen, ChatScreen, ReviewsScreen, AnalyticsScreen }
 import { NewRequestScreen, NotificationsScreen, ProfileScreen } from "./RequestScreens";
 import { MasterRequestsScreen } from "./MasterScreens";
 import AuthScreen from "./AuthScreen";
+import { PrivacyScreen } from "./PrivacyScreen";
 
 function SplashScreen({ onDone }: { onDone: () => void }) {
   const [progress, setProgress] = useState(0);
@@ -172,12 +173,14 @@ export default function Index() {
         </header>
 
         <main className="flex-1 px-4 pt-4 overflow-y-auto" style={{ paddingBottom: "100px" }}>
-          {isMaster ? (
+          {screen === "privacy" ? (
+            <PrivacyScreen onBack={() => setScreen("profile")} />
+          ) : isMaster ? (
             <>
               {screen === "master-requests" && <MasterRequestsScreen user={user} />}
               {screen === "analytics"       && <AnalyticsScreen user={user} />}
               {screen === "notifications"   && <NotificationsScreen user={user} />}
-              {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} />}
+              {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} setScreen={setScreen} />}
             </>
           ) : (
             <>
@@ -187,7 +190,7 @@ export default function Index() {
               {screen === "chat"            && <ChatScreen />}
               {screen === "reviews"         && <ReviewsScreen />}
               {screen === "notifications"   && <NotificationsScreen user={user} />}
-              {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} />}
+              {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} setScreen={setScreen} />}
               {screen === "analytics"       && <AnalyticsScreen user={user} />}
             </>
           )}

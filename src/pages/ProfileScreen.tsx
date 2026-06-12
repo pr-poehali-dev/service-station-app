@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import {
-  API, AuthUser, UserCar,
+  API, AuthUser, UserCar, Screen,
   CAR_LIST,
   loadUserCars, saveUserCars,
 } from "./appTypes";
 
-export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
+export function ProfileScreen({ user, onLogout, setScreen }: { user: AuthUser; onLogout: () => void; setScreen: (s: Screen) => void }) {
   const [cars, setCars] = useState<UserCar[]>(() => {
     const saved = loadUserCars();
     return saved.length ? saved : [
@@ -455,6 +455,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
         {[
           { icon: "Globe", label: "Язык", value: "Русский", danger: false, action: null },
           { icon: "Shield", label: "Безопасность", value: "Сменить пароль", danger: false, action: () => setShowChangePassword(true) },
+          { icon: "FileText", label: "Политика конфиденциальности", value: "", danger: false, action: () => setScreen("privacy") },
           { icon: "HelpCircle", label: "Поддержка", value: "", danger: false, action: () => window.location.href = `mailto:kafalin@rambler.ru?subject=${encodeURIComponent("Обращение в поддержку AutoTech")}&body=${encodeURIComponent("Опишите вашу проблему или вопрос:\n\n")}` },
           { icon: "LogOut", label: "Выйти", value: "", danger: true, action: onLogout },
         ].map((item) => (

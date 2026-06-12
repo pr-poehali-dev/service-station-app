@@ -67,7 +67,8 @@ export type Screen =
   | "notifications"
   | "reviews"
   | "analytics"
-  | "master-requests";
+  | "master-requests"
+  | "privacy";
 
 export interface Master {
   id: number;
