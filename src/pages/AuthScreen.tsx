@@ -56,7 +56,7 @@ export default function AuthScreen({ onAuth }: Props) {
     try {
       const bodyData: Record<string, string> = mode === "login"
         ? { action: "login", phone: phoneRaw, password }
-        : { action: "register", phone: phoneRaw, password, name: name.trim(), role, specialty: specialties.join(", ") || "ТО", station: station.trim() || "Моя станция", address: address.trim() || undefined };
+        : { action: "register", phone: phoneRaw, password, name: name.trim(), role, specialty: specialties.join(", ") || "ТО", station: station.trim() || "Моя станция", address: address.trim() || undefined, privacy_version: "2026-06-12" };
 
       const res = await fetch(API.auth, {
         method: "POST",

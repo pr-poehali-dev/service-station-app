@@ -152,9 +152,10 @@ def handler(event: dict, context) -> dict:
                 (name, station, specialty, name[:2].upper(), address, city),
             )
             master_id = cur.fetchone()[0]
+        privacy_version = (body.get("privacy_version") or "").strip() or None
         cur.execute(
-            f"INSERT INTO {SCHEMA}.users (name, phone, password_hash, role, master_id) VALUES (%s,%s,%s,%s,%s) RETURNING id",
-            (name, phone, stored, role, master_id),
+            f"INSERT INTO {SCHEMA}.users (name, phone, password_hash, role, master_id, privacy_accepted_at, privacy_version) VALUES (%s,%s,%s,%s,%s, CASE WHEN %s IS NOT NULL THEN now() ELSE NULL END, %s) RETURNING id",
+            (name, phone, stored, role, master_id, privacy_version, privacy_version),
         )
         user_id = cur.fetchone()[0]
         conn.commit(); cur.close(); conn.close()
