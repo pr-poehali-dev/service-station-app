@@ -24,11 +24,14 @@ interface Props {
   goToNewRequest: (masterId?: number) => void;
 }
 
+const SPECIALTIES = ["ТО", "Двигатели", "Электрика", "Ходовая", "Кузов", "Шиномонтаж", "Русификация"];
+
 export function AllMastersScreen({ city, onBack, goToNewRequest }: Props) {
   const [masters, setMasters] = useState<ApiMaster[]>([]);
   const [loading, setLoading] = useState(true);
   const [cityInput, setCityInput] = useState(city);
   const [appliedCity, setAppliedCity] = useState(city);
+  const [activeSpec, setActiveSpec] = useState<string | null>(null);
 
   const fetchMasters = async (c: string) => {
     setLoading(true);
@@ -50,6 +53,10 @@ export function AllMastersScreen({ city, onBack, goToNewRequest }: Props) {
     fetchMasters(appliedCity);
   }, [appliedCity]);
 
+  const filtered = activeSpec
+    ? masters.filter(m => m.specialty.toLowerCase().includes(activeSpec.toLowerCase()))
+    : masters;
+
   return (
     <div className="flex flex-col gap-4 pb-4">
       {/* Шапка */}
@@ -62,7 +69,9 @@ export function AllMastersScreen({ city, onBack, goToNewRequest }: Props) {
         </button>
         <div className="flex-1">
           <h2 className="text-base font-bold text-white">Все мастера</h2>
-          <p className="text-xs text-muted-foreground">По рейтингу · {masters.length} найдено</p>
+          <p className="text-xs text-muted-foreground">
+            По рейтингу · {filtered.length} {filtered.length !== masters.length ? `из ${masters.length}` : "найдено"}
+          </p>
         </div>
       </div>
 
@@ -92,6 +101,33 @@ export function AllMastersScreen({ city, onBack, goToNewRequest }: Props) {
         </button>
       </div>
 
+      {/* Фильтр по специализации */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <button
+          onClick={() => setActiveSpec(null)}
+          className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+            activeSpec === null
+              ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan"
+              : "border-border text-muted-foreground hover:border-neon-cyan/30"
+          }`}
+        >
+          Все
+        </button>
+        {SPECIALTIES.map((s) => (
+          <button
+            key={s}
+            onClick={() => setActiveSpec(activeSpec === s ? null : s)}
+            className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+              activeSpec === s
+                ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan"
+                : "border-border text-muted-foreground hover:border-neon-cyan/30"
+            }`}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
       {/* Список */}
       {loading ? (
         <div className="flex flex-col gap-3">
@@ -108,23 +144,35 @@ export function AllMastersScreen({ city, onBack, goToNewRequest }: Props) {
             </div>
           ))}
         </div>
-      ) : masters.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="card-neon rounded-xl p-8 flex flex-col items-center gap-3 text-center">
           <Icon name="SearchX" size={32} className="text-muted-foreground/40" />
           <p className="text-sm font-semibold text-white">Мастера не найдены</p>
           <p className="text-xs text-muted-foreground">
-            {appliedCity ? `В городе «${appliedCity}» мастеров пока нет` : "Нет зарегистрированных мастеров"}
+            {activeSpec
+              ? `Нет мастеров по специализации «${activeSpec}»${appliedCity ? ` в городе «${appliedCity}»` : ""}`
+              : appliedCity
+                ? `В городе «${appliedCity}» мастеров пока нет`
+                : "Нет зарегистрированных мастеров"}
           </p>
-          {appliedCity && (
-            <button onClick={() => { setCityInput(""); setAppliedCity(""); }}
-              className="text-xs text-neon-cyan underline underline-offset-2">
-              Показать всех мастеров
-            </button>
-          )}
+          <div className="flex gap-2 flex-wrap justify-center">
+            {activeSpec && (
+              <button onClick={() => setActiveSpec(null)}
+                className="text-xs text-neon-cyan underline underline-offset-2">
+                Сбросить специализацию
+              </button>
+            )}
+            {appliedCity && (
+              <button onClick={() => { setCityInput(""); setAppliedCity(""); }}
+                className="text-xs text-neon-cyan underline underline-offset-2">
+                Показать всех мастеров
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {masters.map((m, i) => (
+          {filtered.map((m, i) => (
             <div key={m.id} className="card-neon rounded-xl p-4 animate-fade-in" style={{ animationDelay: `${i * 0.05}s` }}>
               <div className="flex items-start gap-3">
                 <div className="relative">
