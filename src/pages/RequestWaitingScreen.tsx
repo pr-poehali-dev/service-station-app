@@ -1,5 +1,6 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
-import { Screen, Bid } from "./appTypes";
+import { API, Screen, Bid } from "./appTypes";
 import { Stars } from "./appHelpers";
 
 interface Props {
@@ -27,6 +28,51 @@ export function RequestWaitingScreen({
   requestTargetMasterId,
   setScreen,
 }: Props) {
+  const [accepting, setAccepting] = useState<number | null>(null);
+  const [accepted, setAccepted] = useState<{ bidId: number; masterName: string; price: number } | null>(null);
+
+  const handleAccept = async (bid: Bid) => {
+    setAccepting(bid.bid_id);
+    try {
+      const res = await fetch(API.getBids, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "accept", bid_id: bid.bid_id, request_id: requestId }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setAccepted({ bidId: bid.bid_id, masterName: bid.master.name, price: bid.price });
+      }
+    } finally {
+      setAccepting(null);
+    }
+  };
+
+  if (accepted) {
+    return (
+      <div className="flex flex-col gap-5 pb-4 animate-fade-in">
+        <div className="relative overflow-hidden rounded-2xl p-6 border border-neon-green/30 text-center"
+          style={{ background: "linear-gradient(135deg, hsla(140,100%,10%,0.4) 0%, hsla(185,100%,10%,0.3) 100%)" }}>
+          <div className="w-16 h-16 rounded-full bg-neon-green/10 border border-neon-green/30 flex items-center justify-center mx-auto mb-4">
+            <Icon name="CheckCircle" size={32} className="text-neon-green" />
+          </div>
+          <h2 className="text-xl font-black text-white mb-1">Отклик принят!</h2>
+          <p className="text-sm text-muted-foreground mb-3">
+            Мастер <span className="text-white font-semibold">{accepted.masterName}</span> получил уведомление
+          </p>
+          <p className="text-2xl font-black font-mono-tech text-neon-green">{accepted.price.toLocaleString("ru")} ₽</p>
+          <p className="text-xs text-muted-foreground mt-1">Согласованная цена</p>
+        </div>
+        <button onClick={() => setScreen("home")} className="btn-neon py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+          <Icon name="Home" size={16} />На главную
+        </button>
+        <button onClick={() => setScreen("history")} className="py-3 rounded-xl border border-border text-muted-foreground text-sm font-semibold">
+          Мои заказы
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-5 pb-4 animate-fade-in">
       <div className="relative overflow-hidden rounded-2xl p-5 border border-neon-cyan/20 text-center"
@@ -146,7 +192,15 @@ export function RequestWaitingScreen({
                   <button onClick={() => setScreen("chat")} className="flex-1 py-2 rounded-lg text-xs font-bold border border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan/10 transition-all">
                     Написать
                   </button>
-                  <button className="flex-1 py-2 rounded-lg text-xs font-bold btn-neon">Принять</button>
+                  <button
+                    onClick={() => handleAccept(bid)}
+                    disabled={accepting === bid.bid_id}
+                    className="flex-1 py-2 rounded-lg text-xs font-bold btn-neon disabled:opacity-60 flex items-center justify-center gap-1.5"
+                  >
+                    {accepting === bid.bid_id
+                      ? <><div className="w-3 h-3 rounded-full border-2 border-background border-t-transparent animate-spin" />Принимаем...</>
+                      : "Принять"}
+                  </button>
                 </div>
               </div>
             ))}
