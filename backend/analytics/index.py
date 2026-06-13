@@ -151,17 +151,29 @@ def handler(event: dict, context) -> dict:
             labels.append(day_names[day.weekday()])
 
     elif period == "month":
-        # последние 6 недель → показываем по неделям
+        # начало текущего месяца (1-е число)
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         cur.execute(f"""
-            SELECT DATE_TRUNC('week', b.created_at) AS w, COALESCE(SUM(b.price), 0)
+            SELECT DATE_TRUNC('week', b.created_at + interval '1 day') - interval '1 day' AS w,
+                   COALESCE(SUM(b.price), 0)
             FROM {SCHEMA}.bids b
             WHERE b.master_id = %s AND b.status = 'accepted'
               AND b.created_at >= %s
             GROUP BY w ORDER BY w
-        """, (int(master_id), start))
+        """, (int(master_id), month_start))
         rows = cur.fetchall()
-        bars = [int(r[1]) for r in rows] or [0]
-        labels = [f"Нед {i+1}" for i in range(len(bars))]
+        row_map = {r[0].date(): int(r[1]) for r in rows}
+        # заполняем все недели месяца (Пн–Вс) до сегодня
+        bars = []
+        labels = []
+        # первый понедельник месяца (или сам 1-й если пн)
+        week_start = month_start - timedelta(days=month_start.weekday())
+        week_num = 1
+        while week_start.replace(tzinfo=timezone.utc) <= now:
+            bars.append(row_map.get(week_start.date(), 0))
+            labels.append(f"Нед {week_num}")
+            week_start += timedelta(days=7)
+            week_num += 1
 
     elif period == "quarter":
         # по месяцам
