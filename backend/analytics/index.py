@@ -26,8 +26,9 @@ def err(msg: str, status: int = 400) -> dict:
 def period_bounds(period: str):
     now = datetime.now(timezone.utc)
     if period == "week":
-        start = now - timedelta(days=7)
-        prev = now - timedelta(days=14)
+        # начало текущей недели (понедельник 00:00 UTC)
+        start = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+        prev = start - timedelta(days=7)
     elif period == "quarter":
         start = now - timedelta(days=91)
         prev = now - timedelta(days=182)
