@@ -151,9 +151,10 @@ def handler(event: dict, context) -> dict:
             labels.append(day_names[day.weekday()])
 
     elif period == "month":
-        # начало текущего месяца (1-е число)
-        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        # получаем все дни месяца с выручкой
+        # 4 полные недели назад от начала текущей недели (Пн)
+        today = now.date()
+        current_monday = today - timedelta(days=today.weekday())
+        month_start = current_monday - timedelta(weeks=3)  # 4 недели включая текущую
         cur.execute(f"""
             SELECT DATE(b.created_at) AS d, COALESCE(SUM(b.price), 0)
             FROM {SCHEMA}.bids b
@@ -163,18 +164,13 @@ def handler(event: dict, context) -> dict:
         """, (int(master_id), month_start))
         rows = cur.fetchall()
         day_map = {r[0]: int(r[1]) for r in rows}
-        # группируем по неделям (Пн–Вс)
         bars = []
         labels = []
-        week_start = (month_start - timedelta(days=month_start.weekday())).date()
-        today = now.date()
-        week_num = 1
-        while week_start <= today:
-            week_rev = sum(day_map.get(week_start + timedelta(days=d), 0) for d in range(7))
+        for week_num in range(4):
+            ws = month_start + timedelta(weeks=week_num)
+            week_rev = sum(day_map.get(ws + timedelta(days=d), 0) for d in range(7))
             bars.append(week_rev)
-            labels.append(f"Нед {week_num}")
-            week_start += timedelta(days=7)
-            week_num += 1
+            labels.append(f"Нед {week_num + 1}")
 
     elif period == "quarter":
         # по месяцам
