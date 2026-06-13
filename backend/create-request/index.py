@@ -85,12 +85,12 @@ def handler(event: dict, context) -> dict:
                        completed_orders, price_from, online, avatar, address, city
                 FROM t_p3896276_service_station_app.masters
                 WHERE (specialty = %s OR specialty LIKE %s OR specialty LIKE %s OR specialty LIKE %s)
-                  AND city = %s
+                  AND (city = %s OR city IS NULL)
                   AND notifications_enabled = TRUE
-                ORDER BY rating DESC, completed_orders DESC
+                ORDER BY (city = %s) DESC, rating DESC, completed_orders DESC
                 LIMIT 10
                 """,
-                (category, f"{category}, %", f"%, {category}, %", f"%, {category}", city),
+                (category, f"{category}, %", f"%, {category}, %", f"%, {category}", city, city),
             )
         else:
             cur.execute(
