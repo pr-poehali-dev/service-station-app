@@ -94,36 +94,81 @@ function ReviewsModal({ masterId, onClose }: { masterId: number; onClose: () => 
   );
 }
 
+const PERIODS = ["Неделя", "Месяц", "Квартал", "Год"] as const;
+type Period = typeof PERIODS[number];
+
+const PERIOD_DATA: Record<Period, {
+  label: string;
+  total: string;
+  delta: string;
+  bars: number[];
+  barLabels: string[];
+  orders: string; ordersD: string;
+  avg: string; avgD: string;
+  clients: string; clientsD: string;
+  services: { name: string; revenue: number }[];
+}> = {
+  "Неделя": {
+    label: "Выручка за неделю", total: "18 400", delta: "+5.2% к прошлой неделе",
+    bars: [2100, 3200, 1800, 4100, 2900, 2500, 1800], barLabels: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
+    orders: "6", ordersD: "+1", avg: "3 067 ₽", avgD: "+8%", clients: "3", clientsD: "+1",
+    services: [{ name: "Замена масла", revenue: 6200 }, { name: "Диагностика", revenue: 4800 }, { name: "Тормоза", revenue: 3900 }, { name: "Ходовая", revenue: 2100 }, { name: "Электрика", revenue: 1400 }],
+  },
+  "Месяц": {
+    label: "Выручка за май", total: "73 500", delta: "+9.7% к прошлому месяцу",
+    bars: [42000, 58000, 51000, 67000, 73500], barLabels: ["Янв", "Фев", "Мар", "Апр", "Май"],
+    orders: "24", ordersD: "+3", avg: "3 063 ₽", avgD: "+12%", clients: "8", clientsD: "+2",
+    services: [{ name: "Замена масла", revenue: 18500 }, { name: "Диагностика", revenue: 14200 }, { name: "Тормоза", revenue: 12800 }, { name: "Ходовая", revenue: 9500 }, { name: "Электрика", revenue: 7200 }],
+  },
+  "Квартал": {
+    label: "Выручка за квартал", total: "182 500", delta: "+14.3% к прошлому кварталу",
+    bars: [55000, 63000, 64500], barLabels: ["Март", "Апр", "Май"],
+    orders: "61", ordersD: "+8", avg: "2 992 ₽", avgD: "+7%", clients: "19", clientsD: "+5",
+    services: [{ name: "Замена масла", revenue: 48000 }, { name: "Диагностика", revenue: 36500 }, { name: "Тормоза", revenue: 31200 }, { name: "Ходовая", revenue: 24800 }, { name: "Электрика", revenue: 18700 }],
+  },
+  "Год": {
+    label: "Выручка за год", total: "641 000", delta: "+22.1% к прошлому году",
+    bars: [48000, 52000, 61000, 55000, 67000, 58000, 71000, 63000, 54000, 49000, 58000, 73500], barLabels: ["Я", "Ф", "М", "А", "М", "И", "И", "А", "С", "О", "Н", "Д"],
+    orders: "208", ordersD: "+37", avg: "3 082 ₽", avgD: "+18%", clients: "64", clientsD: "+14",
+    services: [{ name: "Замена масла", revenue: 168000 }, { name: "Диагностика", revenue: 129000 }, { name: "Тормоза", revenue: 112000 }, { name: "Ходовая", revenue: 84000 }, { name: "Электрика", revenue: 61000 }],
+  },
+};
+
 export function AnalyticsScreen({ user }: { user: AuthUser }) {
   const [showReviews, setShowReviews] = useState(false);
-  const months = ["Янв", "Фев", "Мар", "Апр", "Май"];
-  const values = [42000, 58000, 51000, 67000, 73500];
-  const maxVal = Math.max(...values);
+  const [period, setPeriod] = useState<Period>("Месяц");
+  const d = PERIOD_DATA[period];
+  const maxVal = Math.max(...d.bars);
 
   const metrics = [
-    { label: "Заказов выполнено", value: "24", delta: "+3", icon: "CheckCircle", color: "text-neon-green", onClick: undefined },
-    { label: "Средний чек", value: "3 063 ₽", delta: "+12%", icon: "TrendingUp", color: "text-neon-cyan", onClick: undefined },
-    { label: "Новых клиентов", value: "8", delta: "+2", icon: "Users", color: "text-accent", onClick: undefined },
+    { label: "Заказов выполнено", value: d.orders, delta: d.ordersD, icon: "CheckCircle", color: "text-neon-green", onClick: undefined },
+    { label: "Средний чек", value: d.avg, delta: d.avgD, icon: "TrendingUp", color: "text-neon-cyan", onClick: undefined },
+    { label: "Новых клиентов", value: d.clients, delta: d.clientsD, icon: "Users", color: "text-accent", onClick: undefined },
     { label: "Рейтинг", value: "4.9 ★", delta: "+0.1", icon: "Star", color: "text-yellow-400", onClick: () => setShowReviews(true) },
   ];
+
+  const svcMax = Math.max(...d.services.map(s => s.revenue));
 
   return (
     <div className="flex flex-col gap-5 pb-4">
       <div className="flex gap-2">
-        {["Неделя", "Месяц", "Квартал", "Год"].map((p, i) => (
-          <button key={p} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${i === 1 ? "bg-neon-cyan text-background" : "bg-secondary text-muted-foreground"}`}>{p}</button>
+        {PERIODS.map((p) => (
+          <button key={p} onClick={() => setPeriod(p)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${period === p ? "bg-neon-cyan text-background" : "bg-secondary text-muted-foreground hover:text-white"}`}>
+            {p}
+          </button>
         ))}
       </div>
 
       <div className="card-neon rounded-xl p-4">
-        <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Выручка за май</p>
-        <p className="text-3xl font-black text-white font-mono-tech glow-text-cyan">73 500 <span className="text-lg">₽</span></p>
-        <p className="text-xs text-neon-green mt-1">↑ +9.7% к прошлому месяцу</p>
+        <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">{d.label}</p>
+        <p className="text-3xl font-black text-white font-mono-tech glow-text-cyan">{d.total} <span className="text-lg">₽</span></p>
+        <p className="text-xs text-neon-green mt-1">↑ {d.delta}</p>
         <div className="flex items-end gap-2 mt-5 h-24">
-          {values.map((v, i) => (
+          {d.bars.map((v, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <div className="w-full rounded-t-lg transition-all" style={{ height: `${(v / maxVal) * 80}px`, background: i === values.length - 1 ? "linear-gradient(180deg, hsl(185,100%,50%), hsl(185,100%,30%))" : "hsla(185,100%,50%,0.2)", boxShadow: i === values.length - 1 ? "0 0 12px hsla(185,100%,50%,0.4)" : "none" }} />
-              <span className="text-xs text-muted-foreground">{months[i]}</span>
+              <div className="w-full rounded-t-lg transition-all duration-300" style={{ height: `${(v / maxVal) * 80}px`, background: i === d.bars.length - 1 ? "linear-gradient(180deg, hsl(185,100%,50%), hsl(185,100%,30%))" : "hsla(185,100%,50%,0.2)", boxShadow: i === d.bars.length - 1 ? "0 0 12px hsla(185,100%,50%,0.4)" : "none" }} />
+              <span className="text-xs text-muted-foreground">{d.barLabels[i]}</span>
             </div>
           ))}
         </div>
@@ -153,20 +198,14 @@ export function AnalyticsScreen({ user }: { user: AuthUser }) {
 
       <div className="card-neon rounded-xl p-4">
         <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">Топ услуг по выручке</p>
-        {[
-          { name: "Замена масла", revenue: 18500, pct: 100 },
-          { name: "Диагностика", revenue: 14200, pct: 77 },
-          { name: "Тормоза", revenue: 12800, pct: 69 },
-          { name: "Ходовая", revenue: 9500, pct: 51 },
-          { name: "Электрика", revenue: 7200, pct: 39 },
-        ].map((s) => (
+        {d.services.map((s) => (
           <div key={s.name} className="mb-3">
             <div className="flex justify-between text-sm mb-1">
               <span className="text-white">{s.name}</span>
               <span className="font-mono-tech text-neon-cyan">{s.revenue.toLocaleString("ru")} ₽</span>
             </div>
             <div className="progress-neon h-2">
-              <div className="progress-neon-fill h-full" style={{ width: `${s.pct}%` }} />
+              <div className="progress-neon-fill h-full transition-all duration-300" style={{ width: `${Math.round((s.revenue / svcMax) * 100)}%` }} />
             </div>
           </div>
         ))}
