@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "Аналитика без master_id — ошибка",
+      "method": "GET",
+      "path": "/?period=month",
+      "expectedStatus": 400
+    },
+    {
+      "name": "Аналитика за месяц",
+      "method": "GET",
+      "path": "/?master_id=1&period=month",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Аналитика за неделю",
+      "method": "GET",
+      "path": "/?master_id=1&period=week",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Аналитика за год",
+      "method": "GET",
+      "path": "/?master_id=1&period=year",
+      "expectedStatus": 200
+    }
+  ]
+}

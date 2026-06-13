@@ -96,58 +96,63 @@ function ReviewsModal({ masterId, onClose }: { masterId: number; onClose: () => 
 
 const PERIODS = ["Неделя", "Месяц", "Квартал", "Год"] as const;
 type Period = typeof PERIODS[number];
-
-const PERIOD_DATA: Record<Period, {
-  label: string;
-  total: string;
-  delta: string;
-  bars: number[];
-  barLabels: string[];
-  orders: string; ordersD: string;
-  avg: string; avgD: string;
-  clients: string; clientsD: string;
-  services: { name: string; revenue: number }[];
-}> = {
-  "Неделя": {
-    label: "Выручка за неделю", total: "18 400", delta: "+5.2% к прошлой неделе",
-    bars: [2100, 3200, 1800, 4100, 2900, 2500, 1800], barLabels: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
-    orders: "6", ordersD: "+1", avg: "3 067 ₽", avgD: "+8%", clients: "3", clientsD: "+1",
-    services: [{ name: "Замена масла", revenue: 6200 }, { name: "Диагностика", revenue: 4800 }, { name: "Тормоза", revenue: 3900 }, { name: "Ходовая", revenue: 2100 }, { name: "Электрика", revenue: 1400 }],
-  },
-  "Месяц": {
-    label: "Выручка за май", total: "73 500", delta: "+9.7% к прошлому месяцу",
-    bars: [42000, 58000, 51000, 67000, 73500], barLabels: ["Янв", "Фев", "Мар", "Апр", "Май"],
-    orders: "24", ordersD: "+3", avg: "3 063 ₽", avgD: "+12%", clients: "8", clientsD: "+2",
-    services: [{ name: "Замена масла", revenue: 18500 }, { name: "Диагностика", revenue: 14200 }, { name: "Тормоза", revenue: 12800 }, { name: "Ходовая", revenue: 9500 }, { name: "Электрика", revenue: 7200 }],
-  },
-  "Квартал": {
-    label: "Выручка за квартал", total: "182 500", delta: "+14.3% к прошлому кварталу",
-    bars: [55000, 63000, 64500], barLabels: ["Март", "Апр", "Май"],
-    orders: "61", ordersD: "+8", avg: "2 992 ₽", avgD: "+7%", clients: "19", clientsD: "+5",
-    services: [{ name: "Замена масла", revenue: 48000 }, { name: "Диагностика", revenue: 36500 }, { name: "Тормоза", revenue: 31200 }, { name: "Ходовая", revenue: 24800 }, { name: "Электрика", revenue: 18700 }],
-  },
-  "Год": {
-    label: "Выручка за год", total: "641 000", delta: "+22.1% к прошлому году",
-    bars: [48000, 52000, 61000, 55000, 67000, 58000, 71000, 63000, 54000, 49000, 58000, 73500], barLabels: ["Я", "Ф", "М", "А", "М", "И", "И", "А", "С", "О", "Н", "Д"],
-    orders: "208", ordersD: "+37", avg: "3 082 ₽", avgD: "+18%", clients: "64", clientsD: "+14",
-    services: [{ name: "Замена масла", revenue: 168000 }, { name: "Диагностика", revenue: 129000 }, { name: "Тормоза", revenue: 112000 }, { name: "Ходовая", revenue: 84000 }, { name: "Электрика", revenue: 61000 }],
-  },
+const PERIOD_API: Record<Period, string> = {
+  "Неделя": "week", "Месяц": "month", "Квартал": "quarter", "Год": "year",
 };
+const PERIOD_LABELS: Record<Period, string> = {
+  "Неделя": "Выручка за неделю", "Месяц": "Выручка за месяц",
+  "Квартал": "Выручка за квартал", "Год": "Выручка за год",
+};
+
+interface AnalyticsData {
+  revenue: number;
+  revenue_delta: string;
+  orders: number;
+  orders_delta: string;
+  avg_check: number;
+  avg_check_delta: string;
+  clients: number;
+  clients_delta: string;
+  rating: number;
+  reviews_count: number;
+  top_services: { name: string; revenue: number }[];
+  bars: number[];
+  bar_labels: string[];
+}
 
 export function AnalyticsScreen({ user }: { user: AuthUser }) {
   const [showReviews, setShowReviews] = useState(false);
   const [period, setPeriod] = useState<Period>("Месяц");
-  const d = PERIOD_DATA[period];
-  const maxVal = Math.max(...d.bars);
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const metrics = [
-    { label: "Заказов выполнено", value: d.orders, delta: d.ordersD, icon: "CheckCircle", color: "text-neon-green", onClick: undefined },
-    { label: "Средний чек", value: d.avg, delta: d.avgD, icon: "TrendingUp", color: "text-neon-cyan", onClick: undefined },
-    { label: "Новых клиентов", value: d.clients, delta: d.clientsD, icon: "Users", color: "text-accent", onClick: undefined },
-    { label: "Рейтинг", value: "4.9 ★", delta: "+0.1", icon: "Star", color: "text-yellow-400", onClick: () => setShowReviews(true) },
-  ];
+  useEffect(() => {
+    if (!user.master_id) return;
+    setLoading(true);
+    fetch(`${API.analytics}?master_id=${user.master_id}&period=${PERIOD_API[period]}`)
+      .then(r => r.json())
+      .then(raw => {
+        const d = typeof raw === "string" ? JSON.parse(raw) : raw;
+        setData(d);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [period, user.master_id]);
 
-  const svcMax = Math.max(...d.services.map(s => s.revenue));
+  const bars = data?.bars ?? [];
+  const barLabels = data?.bar_labels ?? [];
+  const maxVal = bars.length ? Math.max(...bars, 1) : 1;
+  const svcMax = data?.top_services.length ? Math.max(...data.top_services.map(s => s.revenue), 1) : 1;
+
+  const fmtMoney = (v: number) => v.toLocaleString("ru");
+  const fmtDelta = (d: string) => (d.startsWith("+") || d.startsWith("-") ? d : `+${d}`);
+
+  const metrics = data ? [
+    { label: "Заказов выполнено", value: String(data.orders), delta: fmtDelta(data.orders_delta), icon: "CheckCircle", color: "text-neon-green", onClick: undefined },
+    { label: "Средний чек", value: data.avg_check ? `${fmtMoney(data.avg_check)} ₽` : "—", delta: fmtDelta(data.avg_check_delta), icon: "TrendingUp", color: "text-neon-cyan", onClick: undefined },
+    { label: "Новых клиентов", value: String(data.clients), delta: fmtDelta(data.clients_delta), icon: "Users", color: "text-accent", onClick: undefined },
+    { label: "Рейтинг", value: data.rating ? `${data.rating} ★` : "—", delta: `${data.reviews_count} отз.`, icon: "Star", color: "text-yellow-400", onClick: () => setShowReviews(true) },
+  ] : [];
 
   return (
     <div className="flex flex-col gap-5 pb-4">
@@ -161,28 +166,58 @@ export function AnalyticsScreen({ user }: { user: AuthUser }) {
       </div>
 
       <div className="card-neon rounded-xl p-4">
-        <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">{d.label}</p>
-        <p className="text-3xl font-black text-white font-mono-tech glow-text-cyan">{d.total} <span className="text-lg">₽</span></p>
-        <p className="text-xs text-neon-green mt-1">↑ {d.delta}</p>
-        <div className="flex items-end gap-2 mt-5 h-24">
-          {d.bars.map((v, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <div className="w-full rounded-t-lg transition-all duration-300" style={{ height: `${(v / maxVal) * 80}px`, background: i === d.bars.length - 1 ? "linear-gradient(180deg, hsl(185,100%,50%), hsl(185,100%,30%))" : "hsla(185,100%,50%,0.2)", boxShadow: i === d.bars.length - 1 ? "0 0 12px hsla(185,100%,50%,0.4)" : "none" }} />
-              <span className="text-xs text-muted-foreground">{d.barLabels[i]}</span>
+        <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">{PERIOD_LABELS[period]}</p>
+        {loading ? (
+          <div className="animate-pulse">
+            <div className="h-9 bg-secondary rounded w-40 mb-2" />
+            <div className="h-3 bg-secondary rounded w-32 mb-5" />
+            <div className="flex items-end gap-2 h-24">
+              {[0,1,2,3,4].map(i => <div key={i} className="flex-1 bg-secondary rounded-t-lg" style={{ height: `${30 + i * 10}px` }} />)}
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <>
+            <p className="text-3xl font-black text-white font-mono-tech glow-text-cyan">
+              {data ? fmtMoney(data.revenue) : "0"} <span className="text-lg">₽</span>
+            </p>
+            <p className="text-xs text-neon-green mt-1">↑ {data?.revenue_delta ?? "—"}</p>
+            <div className="flex items-end gap-2 mt-5 h-24">
+              {bars.length === 0 ? (
+                <p className="text-xs text-muted-foreground self-center mx-auto">Нет данных за период</p>
+              ) : bars.map((v, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <div className="w-full rounded-t-lg transition-all duration-300"
+                    style={{
+                      height: `${Math.max((v / maxVal) * 80, v > 0 ? 4 : 0)}px`,
+                      background: i === bars.length - 1 ? "linear-gradient(180deg, hsl(185,100%,50%), hsl(185,100%,30%))" : "hsla(185,100%,50%,0.2)",
+                      boxShadow: i === bars.length - 1 ? "0 0 12px hsla(185,100%,50%,0.4)" : "none",
+                    }} />
+                  <span className="text-xs text-muted-foreground truncate max-w-full">{barLabels[i]}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        {metrics.map((m) => (
+        {loading ? (
+          [0,1,2,3].map(i => (
+            <div key={i} className="card-neon rounded-xl p-4 animate-pulse">
+              <div className="h-4 bg-secondary rounded w-4 mb-2" />
+              <div className="h-6 bg-secondary rounded w-16 mt-2 mb-1" />
+              <div className="h-3 bg-secondary rounded w-24 mb-1" />
+              <div className="h-3 bg-secondary rounded w-12" />
+            </div>
+          ))
+        ) : metrics.map((m) => (
           m.onClick ? (
             <button key={m.label} onClick={m.onClick}
               className="card-neon rounded-xl p-4 text-left hover:border-yellow-400/40 transition-all relative">
               <Icon name={m.icon} size={18} className={m.color} />
               <p className="text-xl font-black text-white font-mono-tech mt-2">{m.value}</p>
               <p className="text-xs text-muted-foreground">{m.label}</p>
-              <p className="text-xs text-neon-green mt-1">↑ {m.delta}</p>
+              <p className="text-xs text-neon-green mt-1">{m.delta}</p>
               <Icon name="ChevronRight" size={12} className="absolute top-4 right-4 text-muted-foreground/40" />
             </button>
           ) : (
@@ -190,44 +225,37 @@ export function AnalyticsScreen({ user }: { user: AuthUser }) {
               <Icon name={m.icon} size={18} className={m.color} />
               <p className="text-xl font-black text-white font-mono-tech mt-2">{m.value}</p>
               <p className="text-xs text-muted-foreground">{m.label}</p>
-              <p className="text-xs text-neon-green mt-1">↑ {m.delta}</p>
+              <p className="text-xs text-neon-green mt-1">{m.delta}</p>
             </div>
           )
         ))}
       </div>
 
-      <div className="card-neon rounded-xl p-4">
-        <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">Топ услуг по выручке</p>
-        {d.services.map((s) => (
-          <div key={s.name} className="mb-3">
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-white">{s.name}</span>
-              <span className="font-mono-tech text-neon-cyan">{s.revenue.toLocaleString("ru")} ₽</span>
-            </div>
-            <div className="progress-neon h-2">
-              <div className="progress-neon-fill h-full transition-all duration-300" style={{ width: `${Math.round((s.revenue / svcMax) * 100)}%` }} />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="card-neon rounded-xl p-4">
-        <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">Заказы по статусу</p>
-        <div className="flex gap-3">
-          {[
-            { label: "Выполнено", count: 24, color: "bg-neon-cyan" },
-            { label: "В работе", count: 3, color: "bg-accent" },
-            { label: "Отменено", count: 2, color: "bg-destructive" },
-          ].map((s) => (
-            <div key={s.label} className="flex-1 text-center">
-              <div className={`w-10 h-10 rounded-xl ${s.color}/20 border border-${s.color}/30 flex items-center justify-center mx-auto mb-2`}>
-                <span className={`text-lg font-black font-mono-tech text-white`}>{s.count}</span>
+      {!loading && data && data.top_services.length > 0 && (
+        <div className="card-neon rounded-xl p-4">
+          <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">Топ услуг по выручке</p>
+          {data.top_services.map((s) => (
+            <div key={s.name} className="mb-3">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-white">{s.name}</span>
+                <span className="font-mono-tech text-neon-cyan">{fmtMoney(s.revenue)} ₽</span>
               </div>
-              <p className="text-xs text-muted-foreground">{s.label}</p>
+              <div className="progress-neon h-2">
+                <div className="progress-neon-fill h-full transition-all duration-300"
+                  style={{ width: `${Math.round((s.revenue / svcMax) * 100)}%` }} />
+              </div>
             </div>
           ))}
         </div>
-      </div>
+      )}
+
+      {!loading && data && data.top_services.length === 0 && (
+        <div className="card-neon rounded-xl p-6 flex flex-col items-center gap-2 text-center">
+          <Icon name="BarChart2" size={32} className="text-muted-foreground/30" />
+          <p className="text-sm text-muted-foreground">Нет выполненных заказов за период</p>
+          <p className="text-xs text-muted-foreground/60">Данные появятся после первого принятого отклика</p>
+        </div>
+      )}
 
       {showReviews && user.master_id && (
         <ReviewsModal masterId={user.master_id} onClose={() => setShowReviews(false)} />
