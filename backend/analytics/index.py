@@ -30,8 +30,13 @@ def period_bounds(period: str):
         start = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
         prev = start - timedelta(days=7)
     elif period == "quarter":
-        start = now - timedelta(days=91)
-        prev = now - timedelta(days=182)
+        # начало текущего квартала
+        q_month = ((now.month - 1) // 3) * 3 + 1
+        start = now.replace(month=q_month, day=1, hour=0, minute=0, second=0, microsecond=0)
+        # начало предыдущего квартала
+        prev_q_month = q_month - 3 if q_month > 3 else 10
+        prev_year = now.year if q_month > 3 else now.year - 1
+        prev = now.replace(year=prev_year, month=prev_q_month, day=1, hour=0, minute=0, second=0, microsecond=0)
     elif period == "year":
         start = now - timedelta(days=365)
         prev = now - timedelta(days=730)
@@ -181,19 +186,26 @@ def handler(event: dict, context) -> dict:
             week_num += 1
 
     elif period == "quarter":
-        # по месяцам
         cur.execute(f"""
-            SELECT TO_CHAR(DATE_TRUNC('month', b.created_at), 'Mon') AS m,
-                   DATE_TRUNC('month', b.created_at) AS md,
-                   COALESCE(SUM(b.price), 0)
+            SELECT DATE_TRUNC('month', b.created_at) AS md, COALESCE(SUM(b.price), 0)
             FROM {SCHEMA}.bids b
             WHERE b.master_id = %s AND b.status = 'accepted'
               AND b.created_at >= %s
-            GROUP BY md, m ORDER BY md
+            GROUP BY md ORDER BY md
         """, (int(master_id), start))
         rows = cur.fetchall()
-        bars = [int(r[2]) for r in rows] or [0]
-        labels = [r[0] for r in rows] or ["—"]
+        row_map = {r[0].date(): int(r[1]) for r in rows}
+        ru_months = ["", "Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"]
+        q_month = ((now.month - 1) // 3) * 3 + 1
+        bars = []
+        labels = []
+        for i in range(3):
+            m = q_month + i
+            y = now.year
+            from datetime import date as date_cls
+            key = date_cls(y, m, 1)
+            bars.append(row_map.get(key, 0))
+            labels.append(ru_months[m])
 
     else:  # year
         cur.execute(f"""
