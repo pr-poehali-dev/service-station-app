@@ -2,7 +2,7 @@ import Icon from "@/components/ui/icon";
 import { Screen, Master, masters } from "./appTypes";
 import { Stars, Avatar } from "./appHelpers";
 
-export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Screen) => void; goToNewRequest: (masterId?: number) => void }) {
+export function HomeScreen({ setScreen, goToNewRequest, onShowAllMasters }: { setScreen: (s: Screen) => void; goToNewRequest: (masterId?: number, service?: string) => void; onShowAllMasters: () => void }) {
   return (
     <div className="flex flex-col gap-5 pb-4">
       <div className="relative overflow-hidden rounded-2xl p-5 border border-neon-cyan/20" style={{ background: "linear-gradient(135deg, hsla(185,100%,15%,0.3) 0%, hsla(270,80%,20%,0.2) 100%)" }}>
@@ -89,7 +89,7 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
       <div>
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-sm font-semibold uppercase tracking-widest text-gray-200">Топ мастера</h3>
-          <span className="text-xs text-neon-cyan font-mono-tech">Все →</span>
+          <button onClick={onShowAllMasters} className="text-xs text-neon-cyan font-mono-tech hover:text-neon-cyan/70 transition-colors">Все →</button>
         </div>
         <div className="flex flex-col gap-3">
           {masters.map((m: Master, i: number) => (

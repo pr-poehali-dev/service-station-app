@@ -327,6 +327,41 @@ def handler(event: dict, context) -> dict:
         cur.close(); conn.close()
         return ok({"cars": cars})
 
+    # ── GET: список мастеров по городу ───────────────────────────────────────
+    if mode == "masters":
+        city = params.get("city", "").strip()
+        if city:
+            cur.execute(
+                f"""
+                SELECT id, name, station, specialty, rating, reviews_count,
+                       completed_orders, price_from, online, avatar, address, city
+                FROM {SCHEMA}.masters
+                WHERE LOWER(city) = LOWER(%s)
+                ORDER BY rating DESC, reviews_count DESC
+                """,
+                (city,),
+            )
+        else:
+            cur.execute(
+                f"""
+                SELECT id, name, station, specialty, rating, reviews_count,
+                       completed_orders, price_from, online, avatar, address, city
+                FROM {SCHEMA}.masters
+                ORDER BY rating DESC, reviews_count DESC
+                """,
+            )
+        rows = cur.fetchall()
+        masters = []
+        for row in rows:
+            masters.append({
+                "id": row[0], "name": row[1], "station": row[2], "specialty": row[3],
+                "rating": float(row[4]), "reviews_count": row[5], "completed_orders": row[6],
+                "price_from": row[7], "online": row[8], "avatar": row[9],
+                "address": row[10], "city": row[11],
+            })
+        cur.close(); conn.close()
+        return ok({"masters": masters, "count": len(masters), "city": city})
+
     # ── GET: данные мастера ───────────────────────────────────────────────────
     if master_id and mode == "master_info":
         cur.execute(

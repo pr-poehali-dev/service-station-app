@@ -12,6 +12,7 @@ import { NewRequestScreen, NotificationsScreen, ProfileScreen } from "./RequestS
 import { MasterRequestsScreen } from "./MasterScreens";
 import AuthScreen from "./AuthScreen";
 import { PrivacyScreen } from "./PrivacyScreen";
+import { AllMastersScreen } from "./AllMastersScreen";
 
 function SplashScreen({ onDone }: { onDone: () => void }) {
   const [progress, setProgress] = useState(0);
@@ -85,7 +86,24 @@ export default function Index() {
   );
   const [targetMasterId, setTargetMasterId] = useState<number | null>(null);
   const [preselectedService, setPreselectedService] = useState<string>("");
+  const [userCity, setUserCity] = useState("");
   const [unreadCount, setUnreadCount] = useState(notifications.filter(n => !n.read).length);
+
+  useEffect(() => {
+    if (!user || userCity) return;
+    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json&accept-language=ru`,
+          { headers: { "User-Agent": "AutoTechApp/1.0" } }
+        );
+        const data = await res.json();
+        const addr = data.address || {};
+        const detected = addr.city || addr.town || addr.village || addr.municipality || "";
+        if (detected) setUserCity(detected);
+      } catch { /* ignore */ }
+    }, () => {});
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -175,6 +193,8 @@ export default function Index() {
         <main className="flex-1 px-4 pt-4 overflow-y-auto" style={{ paddingBottom: "100px" }}>
           {screen === "privacy" ? (
             <PrivacyScreen onBack={() => setScreen("profile")} />
+          ) : screen === "all-masters" ? (
+            <AllMastersScreen city={userCity} onBack={() => setScreen("home")} goToNewRequest={goToNewRequest} />
           ) : isMaster ? (
             <>
               {screen === "master-requests" && <MasterRequestsScreen user={user} />}
@@ -184,7 +204,7 @@ export default function Index() {
             </>
           ) : (
             <>
-              {screen === "home"            && <HomeScreen setScreen={setScreen} goToNewRequest={goToNewRequest} />}
+              {screen === "home"            && <HomeScreen setScreen={setScreen} goToNewRequest={goToNewRequest} onShowAllMasters={() => setScreen("all-masters")} />}
               {screen === "new-request"     && <NewRequestScreen setScreen={setScreen} targetMasterId={targetMasterId} user={user} preselectedService={preselectedService} />}
               {screen === "history"         && <HistoryScreen setScreen={setScreen} user={user} />}
               {screen === "chat"            && <ChatScreen />}
