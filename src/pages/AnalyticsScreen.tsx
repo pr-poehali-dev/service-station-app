@@ -202,8 +202,8 @@ export function AnalyticsScreen({ user }: { user: AuthUser }) {
                   <div className="w-full rounded-t-lg transition-all duration-300"
                     style={{
                       height: `${Math.max((v / maxVal) * 80, v > 0 ? 4 : 0)}px`,
-                      background: i === bars.length - 1 ? "linear-gradient(180deg, hsl(185,100%,50%), hsl(185,100%,30%))" : "hsla(185,100%,50%,0.2)",
-                      boxShadow: i === bars.length - 1 ? "0 0 12px hsla(185,100%,50%,0.4)" : "none",
+                      background: "linear-gradient(180deg, hsl(185,100%,50%), hsl(185,100%,30%))",
+                      boxShadow: v > 0 ? "0 0 8px hsla(185,100%,50%,0.3)" : "none",
                     }} />
                   <span className="text-xs text-muted-foreground truncate max-w-full">{barLabels[i]}</span>
                 </div>
