@@ -151,26 +151,34 @@ def handler(event: dict, context) -> dict:
             labels.append(day_names[day.weekday()])
 
     elif period == "month":
-        # 4 полные недели назад от начала текущей недели (Пн)
         today = now.date()
-        current_monday = today - timedelta(days=today.weekday())
-        month_start = current_monday - timedelta(weeks=3)  # 4 недели включая текущую
+        # первый день текущего месяца
+        first_day = today.replace(day=1)
+        # последний день текущего месяца
+        if first_day.month == 12:
+            last_day = first_day.replace(year=first_day.year + 1, month=1, day=1) - timedelta(days=1)
+        else:
+            last_day = first_day.replace(month=first_day.month + 1, day=1) - timedelta(days=1)
         cur.execute(f"""
             SELECT DATE(b.created_at) AS d, COALESCE(SUM(b.price), 0)
             FROM {SCHEMA}.bids b
             WHERE b.master_id = %s AND b.status = 'accepted'
-              AND b.created_at >= %s
+              AND b.created_at >= %s AND b.created_at < %s
             GROUP BY d ORDER BY d
-        """, (int(master_id), month_start))
+        """, (int(master_id), first_day, last_day + timedelta(days=1)))
         rows = cur.fetchall()
         day_map = {r[0]: int(r[1]) for r in rows}
         bars = []
         labels = []
-        for week_num in range(4):
-            ws = month_start + timedelta(weeks=week_num)
-            week_rev = sum(day_map.get(ws + timedelta(days=d), 0) for d in range(7))
+        # первый понедельник, покрывающий месяц
+        week_start = first_day - timedelta(days=first_day.weekday())
+        week_num = 1
+        while week_start <= last_day:
+            week_rev = sum(day_map.get(week_start + timedelta(days=d), 0) for d in range(7))
             bars.append(week_rev)
-            labels.append(f"Нед {week_num + 1}")
+            labels.append(f"Нед {week_num}")
+            week_start += timedelta(days=7)
+            week_num += 1
 
     elif period == "quarter":
         # по месяцам
