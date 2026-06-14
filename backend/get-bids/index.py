@@ -258,12 +258,24 @@ def handler(event: dict, context) -> dict:
                      WHERE b2.request_id = r.id AND b2.master_id = %s
                    ) AS already_bid
             FROM {SCHEMA}.requests r
+            JOIN {SCHEMA}.masters m ON m.id = %s
             WHERE r.status = 'open'
-              AND (r.target_master_id IS NULL OR r.target_master_id = %s)
+              AND (
+                r.target_master_id = %s
+                OR (
+                  r.target_master_id IS NULL
+                  AND (
+                    m.specialty = r.category
+                    OR m.specialty LIKE r.category || ', %%'
+                    OR m.specialty LIKE '%%, ' || r.category || ', %%'
+                    OR m.specialty LIKE '%%, ' || r.category
+                  )
+                )
+              )
             ORDER BY r.created_at DESC
             LIMIT 50
             """,
-            (master_id, master_id),
+            (master_id, master_id, master_id),
         )
         rows = cur.fetchall()
         requests_list = []
