@@ -113,21 +113,23 @@ def handler(event: dict, context) -> dict:
     for m in masters:
         m["rating"] = float(m["rating"])
 
-    # Если запрос персональный — создаём уведомление мастеру
-    if master_id and masters:
-        master_name = masters[0]["name"] if masters else "Клиент"
+    # Создаём уведомления всем уведомлённым мастерам
+    for m in masters:
+        if master_id:
+            notif_type = "personal_request"
+            notif_title = "Персональный запрос"
+            notif_text = f"Клиент выбрал вас для: {service}. Автомобиль: {car}"
+        else:
+            notif_type = "new_request"
+            notif_title = f"Новая заявка: {service}"
+            notif_text = f"Автомобиль: {car}" + (f" — {description[:80]}" if description else "")
         cur.execute(
             """
             INSERT INTO t_p3896276_service_station_app.notifications
                 (master_id, type, title, text, request_id)
-            VALUES (%s, 'personal_request', %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s)
             """,
-            (
-                master_id,
-                "Персональный запрос",
-                f"Клиент выбрал вас для: {service}. Автомобиль: {car}",
-                request_id,
-            ),
+            (m["id"], notif_type, notif_title, notif_text, request_id),
         )
 
     conn.commit()

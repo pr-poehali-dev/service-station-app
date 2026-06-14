@@ -10,10 +10,12 @@ export function NotificationsScreen({ user, onUnreadChange }: { user: AuthUser; 
   const iconMap: Record<string, string> = {
     status: "Activity", message: "MessageCircle", promo: "Tag",
     review: "Star", personal_request: "UserCheck", new_bid: "Send",
+    new_request: "ClipboardList", bid_accepted: "CheckCircle",
   };
   const colorMap: Record<string, string> = {
     status: "text-neon-cyan", message: "text-accent", promo: "text-neon-orange",
     review: "text-yellow-400", personal_request: "text-accent", new_bid: "text-neon-cyan",
+    new_request: "text-neon-cyan", bid_accepted: "text-green-400",
   };
 
   const [localNotifs, setLocalNotifs] = useState(user.role === "client" ? notifications : []);
