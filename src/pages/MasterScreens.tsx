@@ -191,8 +191,9 @@ export function MasterRequestsScreen({ user, onOpenChat }: {
   };
 
   const CATEGORY_ICONS: Record<string, string> = {
-    "Двигатели": "Gauge", "Электрика": "Zap", "Ходовая": "Circle",
-    "Кузов": "Shield", "ТО": "Settings", "Шиномонтаж": "RotateCcw", "Другое": "Wrench",
+    "ТО": "Droplets", "Электрика": "Zap", "Ходовая": "Dribbble",
+    "Кузов": "Shield", "Двигатели": "Settings", "Шиномонтаж": "CircleDot",
+    "Русификация": "Languages", "Другое": "MoreHorizontal",
   };
 
   const BID_STATUS: Record<string, { label: string; color: string }> = {
