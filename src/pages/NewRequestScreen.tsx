@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   API, Screen, Bid, AuthUser,
   loadUserCars, addUserCar,
@@ -27,8 +27,8 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
   const [cityLoading, setCityLoading] = useState(false);
   const [cityEdit, setCityEdit] = useState(false);
   const [cityInput, setCityInput] = useState("");
-  const [photos, setPhotos] = useState<{ url: string; name: string }[]>([]);
-  const photoFilesRef = useRef<File[]>([]);
+  const [photos, setPhotos] = useState<{ url: string; name: string; cdnUrl?: string }[]>([]);
+  const [photosUploading, setPhotosUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -69,19 +69,39 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
   const [polling, setPolling] = useState(false);
   const [requestTargetMasterId, setRequestTargetMasterId] = useState<number | null>(null);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    files.forEach((file) => {
-      const url = URL.createObjectURL(file);
-      setPhotos((prev) => [...prev, { url, name: file.name }]);
-      photoFilesRef.current = [...photoFilesRef.current, file];
-    });
     e.target.value = "";
+    if (!files.length) return;
+    setPhotosUploading(true);
+    for (const file of files) {
+      const previewUrl = URL.createObjectURL(file);
+      const idx = Date.now() + Math.random();
+      setPhotos((prev) => [...prev, { url: previewUrl, name: file.name }]);
+      try {
+        const b64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve((reader.result as string).split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        const res = await fetch(API.uploadPhoto, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: file.name, content_type: file.type || "image/jpeg", data: b64 }),
+        });
+        const raw = await res.json();
+        const d = typeof raw === "string" ? JSON.parse(raw) : raw;
+        if (d.url) {
+          setPhotos((prev) => prev.map((p) => p.url === previewUrl ? { ...p, cdnUrl: d.url } : p));
+        }
+      } catch { /* оставляем без cdnUrl */ }
+    }
+    setPhotosUploading(false);
   };
 
   const removePhoto = (idx: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== idx));
-    photoFilesRef.current = photoFilesRef.current.filter((_, i) => i !== idx);
   };
 
   const fetchBids = useCallback(async (reqId: number) => {
@@ -103,34 +123,11 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
     return () => clearInterval(interval);
   }, [requestId, polling, fetchBids]);
 
-  const uploadPhotos = async (): Promise<string[]> => {
-    const urls: string[] = [];
-    for (const file of photoFilesRef.current) {
-      try {
-        const b64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve((reader.result as string).split(",")[1]);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        const res = await fetch(API.uploadPhoto, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ filename: file.name, content_type: file.type || "image/jpeg", data: b64 }),
-        });
-        const raw = await res.json();
-        const d = typeof raw === "string" ? JSON.parse(raw) : raw;
-        if (d.url) urls.push(d.url);
-      } catch { /* пропускаем неудавшееся фото */ }
-    }
-    return urls;
-  };
-
   const doSubmit = async () => {
     setShowAddCarBanner(false);
     setLoading(true); setError("");
     try {
-      const photoUrls = await uploadPhotos();
+      const photoUrls = photos.filter(p => p.cdnUrl).map(p => p.cdnUrl!);
       const res = await fetch(API.createRequest, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -146,7 +143,6 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
       });
       const raw = await res.json();
       const data = typeof raw === "string" ? JSON.parse(raw) : raw;
-      photoFilesRef.current = [];
       setRequestId(data.request_id);
       setNotifiedCount(data.notified_masters);
       setPolling(true);
@@ -237,6 +233,7 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
         description={description}
         setDescription={setDescription}
         photos={photos}
+        photosUploading={photosUploading}
         onPhotoUpload={handlePhotoUpload}
         onRemovePhoto={removePhoto}
         error={error}

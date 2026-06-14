@@ -6,7 +6,8 @@ interface Props {
   setSelectedService: (v: string) => void;
   description: string;
   setDescription: (v: string) => void;
-  photos: { url: string; name: string }[];
+  photos: { url: string; name: string; cdnUrl?: string }[];
+  photosUploading?: boolean;
   onPhotoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemovePhoto: (idx: number) => void;
   error: string;
@@ -22,7 +23,7 @@ interface Props {
 export function RequestFormBody({
   selectedService, setSelectedService,
   description, setDescription,
-  photos, onPhotoUpload, onRemovePhoto,
+  photos, photosUploading, onPhotoUpload, onRemovePhoto,
   error, loading,
   showAddCarBanner, addingCar, car,
   onSubmit, onAddCarAndSubmit, onSkipAddCar,
@@ -54,6 +55,11 @@ export function RequestFormBody({
               {photos.map((p, idx) => (
                 <div key={idx} className="relative rounded-xl overflow-hidden border border-neon-cyan/20 aspect-square">
                   <img src={p.url} alt={p.name} className="w-full h-full object-cover" />
+                  {!p.cdnUrl && (
+                    <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+                      <div className="w-4 h-4 rounded-full border-2 border-neon-cyan border-t-transparent animate-spin" />
+                    </div>
+                  )}
                   <button onClick={() => onRemovePhoto(idx)} className="absolute top-1 right-1 w-5 h-5 rounded-full bg-background/80 flex items-center justify-center">
                     <Icon name="X" size={10} className="text-white" />
                   </button>
