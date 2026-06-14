@@ -201,7 +201,7 @@ export default function Index() {
               {screen === "master-requests" && <MasterRequestsScreen user={user} onOpenChat={(requestId, masterName, masterAvatar) => { setChatContext({ requestId, masterName, masterAvatar }); setScreen("chat"); }} />}
               {screen === "chat"            && <ChatScreen user={user} requestId={chatContext?.requestId ?? null} masterName={chatContext?.masterName ?? ""} masterAvatar={chatContext?.masterAvatar ?? ""} />}
               {screen === "analytics"       && <AnalyticsScreen user={user} />}
-              {screen === "notifications"   && <NotificationsScreen user={user} />}
+              {screen === "notifications"   && <NotificationsScreen user={user} onUnreadChange={setUnreadCount} />}
               {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} setScreen={setScreen} />}
             </>
           ) : (
@@ -211,7 +211,7 @@ export default function Index() {
               {screen === "history"         && <HistoryScreen setScreen={setScreen} user={user} onOpenChat={(requestId, _masterId, masterName, masterAvatar) => { setChatContext({ requestId, masterName, masterAvatar }); setScreen("chat"); }} />}
               {screen === "chat"            && <ChatScreen user={user} requestId={chatContext?.requestId ?? null} masterName={chatContext?.masterName ?? ""} masterAvatar={chatContext?.masterAvatar ?? ""} />}
               {screen === "reviews"         && <ReviewsScreen />}
-              {screen === "notifications"   && <NotificationsScreen user={user} />}
+              {screen === "notifications"   && <NotificationsScreen user={user} onUnreadChange={setUnreadCount} />}
               {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} setScreen={setScreen} />}
               {screen === "analytics"       && <AnalyticsScreen user={user} />}
             </>

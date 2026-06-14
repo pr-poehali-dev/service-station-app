@@ -6,7 +6,7 @@ import {
   ApiNotif, formatNotifTime,
 } from "./appTypes";
 
-export function NotificationsScreen({ user }: { user: AuthUser }) {
+export function NotificationsScreen({ user, onUnreadChange }: { user: AuthUser; onUnreadChange?: (count: number) => void }) {
   const iconMap: Record<string, string> = {
     status: "Activity", message: "MessageCircle", promo: "Tag",
     review: "Star", personal_request: "UserCheck", new_bid: "Send",
@@ -35,11 +35,19 @@ export function NotificationsScreen({ user }: { user: AuthUser }) {
   }, []);
 
   const markLocalRead = (id: number) => {
-    setLocalNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    setLocalNotifs(prev => {
+      const next = prev.map(n => n.id === id ? { ...n, read: true } : n);
+      onUnreadChange?.(next.filter(n => !n.read).length + apiNotifs.filter(n => !n.is_read).length);
+      return next;
+    });
   };
 
   const markApiRead = async (id: number) => {
-    setApiNotifs(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+    setApiNotifs(prev => {
+      const next = prev.map(n => n.id === id ? { ...n, is_read: true } : n);
+      onUnreadChange?.(localNotifs.filter(n => !n.read).length + next.filter(n => !n.is_read).length);
+      return next;
+    });
     fetch(API.getNotifications, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -58,6 +66,7 @@ export function NotificationsScreen({ user }: { user: AuthUser }) {
         body: JSON.stringify({ ids: unreadIds }),
       }).catch(() => {});
     }
+    onUnreadChange?.(0);
   };
 
   const totalUnread = localNotifs.filter(n => !n.read).length + apiNotifs.filter(n => !n.is_read).length;
