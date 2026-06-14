@@ -61,13 +61,22 @@ export function NotificationsScreen({ user }: { user: AuthUser }) {
   };
 
   const totalUnread = localNotifs.filter(n => !n.read).length + apiNotifs.filter(n => !n.is_read).length;
+  const hasAny = localNotifs.length > 0 || apiNotifs.length > 0;
+
+  const clearAll = () => {
+    setLocalNotifs([]);
+    setApiNotifs([]);
+  };
 
   return (
     <div className="flex flex-col gap-4 pb-4">
-      {totalUnread > 0 && (
+      {hasAny && (
         <div className="flex justify-between items-center">
-          <p className="text-xs text-muted-foreground">{totalUnread} непрочитанных</p>
-          <button onClick={markAllRead} className="text-xs text-neon-cyan">Прочитать все</button>
+          <p className="text-xs text-muted-foreground">{totalUnread > 0 ? `${totalUnread} непрочитанных` : "Все прочитаны"}</p>
+          <div className="flex items-center gap-3">
+            {totalUnread > 0 && <button onClick={markAllRead} className="text-xs text-neon-cyan">Прочитать все</button>}
+            <button onClick={clearAll} className="text-xs text-muted-foreground hover:text-destructive transition-colors">Очистить</button>
+          </div>
         </div>
       )}
 
