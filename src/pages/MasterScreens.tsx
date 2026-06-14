@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Icon from "@/components/ui/icon";
 import { API, AuthUser } from "./appTypes";
 
@@ -160,8 +160,10 @@ export function MasterRequestsScreen({ user, onOpenChat }: {
   const [loading, setLoading] = useState(true);
   const [bidTarget, setBidTarget] = useState<IncomingRequest | null>(null);
 
-  const load = async () => {
-    setLoading(true);
+  const isFirstLoad = useRef(true);
+
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const [r1, r2] = await Promise.all([
         fetch(`${API.getBids}?master_id=${masterId}&mode=incoming`).then(r => r.json()),
@@ -172,10 +174,14 @@ export function MasterRequestsScreen({ user, onOpenChat }: {
       setIncoming(d1.requests || []);
       setMybids(d2.bids || []);
     } catch { /* silent */ }
-    finally { setLoading(false); }
+    finally { if (!silent) setLoading(false); }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    const interval = setInterval(() => load(true), 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleBidSuccess = () => {
     setBidTarget(null);
