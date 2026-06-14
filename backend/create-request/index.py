@@ -6,6 +6,7 @@
 import json
 import os
 import psycopg2
+import psycopg2.extras
 import urllib.request
 
 CORS = {
@@ -61,7 +62,7 @@ def handler(event: dict, context) -> dict:
         VALUES (%s, %s, %s, %s, %s, 'open', %s, %s, %s)
         RETURNING id, created_at
         """,
-        (client_id, service, category, car, description, master_id or None, city, photos),
+        (client_id, service, category, car, description, master_id or None, city, photos if photos else []),
     )
     row = cur.fetchone()
     request_id, created_at = row[0], row[1]
