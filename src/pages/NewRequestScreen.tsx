@@ -129,8 +129,10 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
   const doSubmit = async () => {
     setShowAddCarBanner(false);
     setLoading(true); setError("");
+    console.warn("[doSubmit] photos count:", photos.length);
     try {
       const photoUrls = await uploadPhotos();
+      console.warn("[doSubmit] photoUrls:", photoUrls);
       const res = await fetch(API.createRequest, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
