@@ -27,7 +27,7 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
   const [cityLoading, setCityLoading] = useState(false);
   const [cityEdit, setCityEdit] = useState(false);
   const [cityInput, setCityInput] = useState("");
-  const [photos, setPhotos] = useState<{ url: string; name: string; cdnUrl?: string }[]>([]);
+  const [photos, setPhotos] = useState<{ id: string; url: string; name: string; cdnUrl?: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -68,38 +68,30 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
   const [polling, setPolling] = useState(false);
   const [requestTargetMasterId, setRequestTargetMasterId] = useState<number | null>(null);
 
-  const uploadFileToS3 = (file: File, previewUrl: string) => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const b64 = (reader.result as string).split(",")[1];
-        const res = await fetch(API.uploadPhoto, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ filename: file.name, content_type: file.type || "image/jpeg", data: b64 }),
-        });
-        const raw = await res.json();
-        const d = typeof raw === "string" ? JSON.parse(raw) : raw;
-        if (d.url) {
-          setPhotos((prev) => prev.map((p) => p.url === previewUrl ? { ...p, cdnUrl: d.url } : p));
-        }
-      } catch (err) {
-        console.error("[photo] upload failed", err);
-      }
-    };
-    reader.onerror = (err) => console.error("[photo] reader error", err);
-    reader.readAsDataURL(file);
-  };
-
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     e.target.value = "";
-    console.warn("[photo] files selected:", files.length, files.map(f => f.name));
     if (!files.length) return;
     for (const file of files) {
+      const photoId = `${Date.now()}-${Math.random()}`;
       const previewUrl = URL.createObjectURL(file);
-      setPhotos((prev) => [...prev, { url: previewUrl, name: file.name }]);
-      uploadFileToS3(file, previewUrl);
+      setPhotos((prev) => [...prev, { id: photoId, url: previewUrl, name: file.name }]);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const b64 = (reader.result as string).split(",")[1];
+        fetch(API.uploadPhoto, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: file.name, content_type: file.type || "image/jpeg", data: b64 }),
+        })
+          .then((r) => r.json())
+          .then((raw) => {
+            const d = typeof raw === "string" ? JSON.parse(raw) : raw;
+            if (d.url) setPhotos((prev) => prev.map((p) => p.id === photoId ? { ...p, cdnUrl: d.url } : p));
+          })
+          .catch(() => {});
+      };
+      reader.readAsDataURL(file);
     }
   };
 

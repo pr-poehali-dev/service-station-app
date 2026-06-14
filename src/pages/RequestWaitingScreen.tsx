@@ -9,7 +9,7 @@ interface Props {
   selectedService: string;
   car: string;
   description: string;
-  photos: { url: string; name: string }[];
+  photos: { id: string; url: string; name: string; cdnUrl?: string }[];
   bids: Bid[];
   polling: boolean;
   requestTargetMasterId: number | null;
