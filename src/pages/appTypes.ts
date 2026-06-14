@@ -289,8 +289,9 @@ export const screenTitles: Record<Screen, string> = {
 };
 
 export const masterNavItems = [
-  { id: "master-requests", icon: "Inbox",         label: "Заявки" },
-  { id: "analytics",       icon: "BarChart2",     label: "Статистика" },
-  { id: "notifications",   icon: "Bell",          label: "Уведомления" },
-  { id: "profile",         icon: "User",          label: "Профиль" },
+  { id: "master-requests", icon: "Inbox",            label: "Заявки" },
+  { id: "chat",            icon: "MessageCircle",    label: "Чат" },
+  { id: "analytics",       icon: "BarChart2",        label: "Статистика" },
+  { id: "notifications",   icon: "Bell",             label: "Уведомления" },
+  { id: "profile",         icon: "User",             label: "Профиль" },
 ];

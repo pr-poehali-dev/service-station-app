@@ -198,7 +198,8 @@ export default function Index() {
             <AllMastersScreen city={userCity} onBack={() => setScreen("home")} goToNewRequest={goToNewRequest} />
           ) : isMaster ? (
             <>
-              {screen === "master-requests" && <MasterRequestsScreen user={user} />}
+              {screen === "master-requests" && <MasterRequestsScreen user={user} onOpenChat={(requestId, masterName, masterAvatar) => { setChatContext({ requestId, masterName, masterAvatar }); setScreen("chat"); }} />}
+              {screen === "chat"            && <ChatScreen user={user} requestId={chatContext?.requestId ?? null} masterName={chatContext?.masterName ?? ""} masterAvatar={chatContext?.masterAvatar ?? ""} />}
               {screen === "analytics"       && <AnalyticsScreen user={user} />}
               {screen === "notifications"   && <NotificationsScreen user={user} />}
               {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} setScreen={setScreen} />}

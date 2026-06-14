@@ -148,7 +148,10 @@ function BidModal({
 
 // ─── MasterRequestsScreen — входящие заявки ───────────────────────────────────
 
-export function MasterRequestsScreen({ user }: { user: AuthUser }) {
+export function MasterRequestsScreen({ user, onOpenChat }: {
+  user: AuthUser;
+  onOpenChat: (requestId: number, masterName: string, masterAvatar: string) => void;
+}) {
   const masterId = user.master_id ?? user.id;
   const [tab, setTab] = useState<"incoming" | "mybids">("incoming");
   const [incoming, setIncoming] = useState<IncomingRequest[]>([]);
@@ -303,7 +306,16 @@ export function MasterRequestsScreen({ user }: { user: AuthUser }) {
                   )}
                   <div className="flex items-center justify-between">
                     <span className="text-base font-bold text-neon-cyan font-mono-tech">{formatPrice(bid.price)}</span>
-                    <span className="text-xs text-muted-foreground/60 font-mono-tech">{timeAgo(bid.bid_created_at)}</span>
+                    <div className="flex items-center gap-2">
+                      {bid.bid_status === "accepted" && (
+                        <button
+                          onClick={() => onOpenChat(bid.request.id, user.name, user.name.slice(0, 2).toUpperCase())}
+                          className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan font-semibold hover:bg-neon-cyan/20 transition-colors">
+                          <Icon name="MessageCircle" size={11} />Чат
+                        </button>
+                      )}
+                      <span className="text-xs text-muted-foreground/60 font-mono-tech">{timeAgo(bid.bid_created_at)}</span>
+                    </div>
                   </div>
                 </div>
               );
