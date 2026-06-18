@@ -224,7 +224,7 @@ def handler(event: dict, context) -> dict:
             SELECT b.id, b.price, b.comment, b.status, b.created_at,
                    m.id, m.name, m.station, m.specialty, m.rating,
                    m.reviews_count, m.completed_orders, m.online, m.avatar, m.address,
-                   u.phone
+                   COALESCE(m.phone, u.phone) AS phone
             FROM {SCHEMA}.bids b
             JOIN {SCHEMA}.masters m ON m.id = b.master_id
             LEFT JOIN {SCHEMA}.users u ON u.master_id = m.id
