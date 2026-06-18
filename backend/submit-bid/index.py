@@ -159,6 +159,11 @@ def handler(event: dict, context) -> dict:
     master_name = master[0] if master else "Мастер"
     station = master[1] if master else ""
 
+    cur.execute(
+        f"UPDATE {SCHEMA}.notifications SET is_read = TRUE WHERE master_id = %s AND request_id = %s AND type = 'new_request'",
+        (master_id, request_id),
+    )
+
     if client_id:
         price_fmt = f"{int(price):,}".replace(",", " ") + " ₽"
         notif_text = f"{master_name} ({station}) предлагает {price_fmt}"
