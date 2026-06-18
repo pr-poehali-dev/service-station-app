@@ -1,7 +1,7 @@
 """
-Управление Web Push подписками мастеров.
-POST {action:'subscribe', master_id, endpoint, p256dh, auth} — сохранить подписку
-POST {action:'unsubscribe', master_id, endpoint} — удалить подписку
+Управление Web Push подписками мастеров и клиентов.
+POST {action:'subscribe', master_id|user_id, endpoint, p256dh, auth} — сохранить подписку
+POST {action:'unsubscribe', endpoint} — удалить подписку
 GET  ?vapid_public_key=1 — получить публичный VAPID ключ
 """
 import json
@@ -37,11 +37,16 @@ def handler(event: dict, context) -> dict:
     if method == "POST":
         body = json.loads(event.get("body") or "{}")
         action = body.get("action")
-        master_id = body.get("master_id")
         endpoint = body.get("endpoint")
 
-        if not master_id or not endpoint:
-            return err("master_id и endpoint обязательны")
+        if not endpoint:
+            return err("endpoint обязателен")
+
+        master_id = body.get("master_id")
+        user_id = body.get("user_id")
+
+        if not master_id and not user_id:
+            return err("master_id или user_id обязателен")
 
         conn = psycopg2.connect(os.environ["DATABASE_URL"])
         cur = conn.cursor()
@@ -54,19 +59,27 @@ def handler(event: dict, context) -> dict:
                 return err("p256dh и auth обязательны")
             cur.execute(
                 f"""
-                INSERT INTO {SCHEMA}.push_subscriptions (master_id, endpoint, p256dh, auth)
-                VALUES (%s, %s, %s, %s)
-                ON CONFLICT (master_id, endpoint) DO UPDATE SET p256dh = EXCLUDED.p256dh, auth = EXCLUDED.auth
+                INSERT INTO {SCHEMA}.push_subscriptions (master_id, user_id, endpoint, p256dh, auth)
+                VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT (endpoint) DO UPDATE
+                  SET master_id = EXCLUDED.master_id,
+                      user_id   = EXCLUDED.user_id,
+                      p256dh    = EXCLUDED.p256dh,
+                      auth      = EXCLUDED.auth
                 """,
-                (int(master_id), endpoint, p256dh, auth),
+                (
+                    int(master_id) if master_id else None,
+                    int(user_id) if user_id else None,
+                    endpoint, p256dh, auth,
+                ),
             )
             conn.commit(); cur.close(); conn.close()
             return ok({"ok": True})
 
         if action == "unsubscribe":
             cur.execute(
-                f"UPDATE {SCHEMA}.push_subscriptions SET endpoint = endpoint WHERE master_id = %s AND endpoint = %s",
-                (int(master_id), endpoint),
+                f"DELETE FROM {SCHEMA}.push_subscriptions WHERE endpoint = %s",
+                (endpoint,),
             )
             conn.commit(); cur.close(); conn.close()
             return ok({"ok": True})

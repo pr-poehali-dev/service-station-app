@@ -7,6 +7,7 @@
 import json
 import os
 import psycopg2
+import urllib.request
 
 SCHEMA = "t_p3896276_service_station_app"
 CORS = {
@@ -178,5 +179,27 @@ def handler(event: dict, context) -> dict:
         )
 
     conn.commit(); cur.close(); conn.close()
+
+    if client_id:
+        try:
+            send_push_url = os.environ.get("SEND_PUSH_URL", "")
+            if send_push_url:
+                price_fmt = f"{int(price):,}".replace(",", " ") + " ₽"
+                push_payload = json.dumps({
+                    "user_ids": [client_id],
+                    "title": f"Новый отклик на «{service_name}»",
+                    "body": f"{master_name} ({station}) предлагает {price_fmt}",
+                    "data": {"request_id": request_id},
+                }).encode()
+                req = urllib.request.Request(
+                    send_push_url,
+                    data=push_payload,
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                )
+                urllib.request.urlopen(req, timeout=5)
+        except Exception:
+            pass
+
     return ok({"bid_id": bid_id, "request_id": request_id, "master_name": master_name,
                "station": station, "price": price, "comment": comment, "created_at": str(created_at)})

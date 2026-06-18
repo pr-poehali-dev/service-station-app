@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 import {
   API, Screen, AuthUser,
@@ -90,6 +91,11 @@ export default function Index() {
   const [chatContext, setChatContext] = useState<{ requestId: number; masterName: string; masterAvatar: string } | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(notifications.filter(n => !n.read).length);
+
+  usePushNotifications(
+    isMaster ? (user?.master_id ?? null) : null,
+    !isMaster ? (user?.id ?? null) : null,
+  );
 
   useEffect(() => {
     if (!user || userCity) return;

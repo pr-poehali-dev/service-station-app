@@ -8,7 +8,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
 }
 
-export function usePushNotifications(masterId: number | null) {
+export function usePushNotifications(masterId: number | null, userId: number | null = null) {
   const [subscribed, setSubscribed] = useState(false);
   const [supported, setSupported] = useState(false);
 
@@ -17,7 +17,7 @@ export function usePushNotifications(masterId: number | null) {
   }, []);
 
   useEffect(() => {
-    if (!supported || !masterId) return;
+    if (!supported || (!masterId && !userId)) return;
 
     const register = async () => {
       try {
@@ -44,7 +44,7 @@ export function usePushNotifications(masterId: number | null) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             action: "subscribe",
-            master_id: masterId,
+            ...(masterId ? { master_id: masterId } : { user_id: userId }),
             endpoint: subJson.endpoint,
             p256dh: subJson.keys?.p256dh,
             auth: subJson.keys?.auth,
@@ -55,7 +55,7 @@ export function usePushNotifications(masterId: number | null) {
     };
 
     register();
-  }, [supported, masterId]);
+  }, [supported, masterId, userId]);
 
   return { subscribed, supported };
 }
