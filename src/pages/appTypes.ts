@@ -100,6 +100,7 @@ export interface ApiMaster {
   online: boolean;
   avatar: string;
   address?: string | null;
+  phone?: string | null;
 }
 
 export interface Bid {

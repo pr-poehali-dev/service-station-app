@@ -192,6 +192,12 @@ export function RequestWaitingScreen({
                   <button onClick={() => setScreen("chat")} className="flex-1 py-2 rounded-lg text-xs font-bold border border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan/10 transition-all">
                     Написать
                   </button>
+                  {bid.master.phone && (
+                    <a href={`tel:${bid.master.phone}`} className="flex-1 py-2 rounded-lg text-xs font-bold border border-neon-green/30 text-neon-green hover:bg-neon-green/10 transition-all flex items-center justify-center gap-1.5">
+                      <Icon name="Phone" size={12} />
+                      Позвонить
+                    </a>
+                  )}
                   <button
                     onClick={() => handleAccept(bid)}
                     disabled={accepting === bid.bid_id}
