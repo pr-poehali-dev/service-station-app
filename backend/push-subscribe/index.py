@@ -68,7 +68,7 @@ def handler(event: dict, context) -> dict:
                       auth      = EXCLUDED.auth
                 """,
                 (
-                    int(master_id) if master_id else None,
+                    int(master_id) if master_id else 0,
                     int(user_id) if user_id else None,
                     endpoint, p256dh, auth,
                 ),
