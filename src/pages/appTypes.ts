@@ -1,3 +1,12 @@
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+export function pluralOrders(n: number): string {
+  const mod10 = n % 10, mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return `${n} заказ`;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return `${n} заказа`;
+  return `${n} заказов`;
+}
+
 // ─── API URLs ─────────────────────────────────────────────────────────────────
 
 export const API = {
