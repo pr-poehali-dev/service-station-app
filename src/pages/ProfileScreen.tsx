@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { API, AuthUser, UserCar, Screen, loadUserCars, saveUserCars, fetchUserCars } from "./appTypes";
+import { API, AuthUser, UserCar, Screen, loadUserCars, saveUserCars, fetchUserCars, addUserCar, deleteUserCar } from "./appTypes";
 import { ProfileHeader } from "./profile/ProfileHeader";
 import { MasterStation } from "./profile/MasterStation";
 import { ClientCars } from "./profile/ClientCars";
@@ -82,6 +82,10 @@ export function ProfileScreen({ user, onLogout, setScreen }: { user: AuthUser; o
           cars={cars}
           setCars={setCars}
           saveUserCars={saveUserCars}
+          userId={user.id}
+          addUserCar={addUserCar}
+          deleteUserCar={deleteUserCar}
+          refreshCars={() => fetchUserCars(user.id).then(f => { if (f.length) { setCars(f); saveUserCars(f); } }).catch(() => {})}
         />
       )}
 

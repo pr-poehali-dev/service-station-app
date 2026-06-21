@@ -6,16 +6,21 @@ interface Props {
   cars: UserCar[];
   setCars: (cars: UserCar[]) => void;
   saveUserCars: (cars: UserCar[]) => void;
+  userId: number;
+  addUserCar: (userId: number, car: { brand: string; model: string; year: number; vin?: string }) => Promise<UserCar>;
+  deleteUserCar: (userId: number, carId: number) => Promise<void>;
+  refreshCars: () => void;
 }
 
-export function ClientCars({ cars, setCars, saveUserCars }: Props) {
+export function ClientCars({ cars, setCars, saveUserCars, userId, addUserCar, deleteUserCar, refreshCars }: Props) {
   const [showForm, setShowForm] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<number | null>(null);
   const [formModel, setFormModel] = useState("");
   const [formYear, setFormYear] = useState("");
   const [formPlate, setFormPlate] = useState("");
   const [modelFocused, setModelFocused] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
   const [formVin, setFormVin] = useState("");
   const [formVinLoading, setFormVinLoading] = useState(false);
   const [formVinError, setFormVinError] = useState("");
@@ -28,23 +33,38 @@ export function ClientCars({ cars, setCars, saveUserCars }: Props) {
     setEditId(null); setFormModel(""); setFormYear(""); setFormPlate(""); setFormVin(""); setFormVinError(""); setShowForm(true);
   };
   const openEdit = (car: UserCar) => {
-    setEditId(car.id); setFormModel(car.model); setFormYear(car.year ? String(car.year) : ""); setFormPlate(car.plate ?? ""); setFormVin(""); setFormVinError(""); setShowForm(true);
+    setEditId(car.id); setFormModel([car.brand, car.model].filter(Boolean).join(" ").trim() || car.model); setFormYear(car.year ? String(car.year) : ""); setFormPlate(car.plate ?? ""); setFormVin(""); setFormVinError(""); setShowForm(true);
   };
 
-  const handleSave = () => {
-    if (!formModel.trim()) return;
-    let updated: UserCar[];
-    if (editId) {
-      updated = cars.map(c => c.id === editId ? { ...c, model: formModel.trim(), year: formYear ? parseInt(formYear) : undefined, plate: formPlate.trim() } : c);
-    } else {
-      updated = [...cars, { id: Date.now().toString(), model: formModel.trim(), year: formYear ? parseInt(formYear) : undefined, plate: formPlate.trim() }];
+  const handleSave = async () => {
+    if (!formModel.trim() || saving) return;
+    const parts = formModel.trim().split(" ");
+    const brand = parts[0] || "";
+    const model = parts.slice(1).join(" ") || parts[0];
+    const year = formYear ? parseInt(formYear) : new Date().getFullYear();
+    setSaving(true);
+    try {
+      if (editId) {
+        const updated = cars.map(c => c.id === editId ? { ...c, brand, model, year, plate: formPlate.trim() } : c);
+        setCars(updated); saveUserCars(updated);
+      } else {
+        const newCar = await addUserCar(userId, { brand, model, year, vin: formVin.trim() || undefined });
+        if (newCar) { refreshCars(); }
+      }
+    } catch { /* ignore */ }
+    finally { setSaving(false); }
+    setShowForm(false);
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteUserCar(userId, id);
+      refreshCars();
+    } catch {
+      const updated = cars.filter(c => c.id !== id);
+      setCars(updated); saveUserCars(updated);
     }
-    setCars(updated); saveUserCars(updated); setShowForm(false);
-  };
-
-  const handleDelete = (id: string) => {
-    const updated = cars.filter(c => c.id !== id);
-    setCars(updated); saveUserCars(updated); setDeleteId(null);
+    setDeleteId(null);
   };
 
   const handleFormVinDecode = async () => {
@@ -85,8 +105,8 @@ export function ClientCars({ cars, setCars, saveUserCars }: Props) {
                   <Icon name="Car" size={20} className="text-neon-cyan" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-white text-sm truncate">{car.model}</p>
-                  <p className="text-xs text-muted-foreground">{[car.plate, car.color].filter(Boolean).join(" · ")}</p>
+                  <p className="font-semibold text-white text-sm truncate">{[car.brand, car.model].filter(Boolean).join(" ").trim() || car.model}</p>
+                  <p className="text-xs text-muted-foreground">{[car.year, car.plate].filter(Boolean).join(" · ")}</p>
                 </div>
                 {deleteId === car.id ? (
                   <div className="flex gap-2 flex-shrink-0">
@@ -174,8 +194,8 @@ export function ClientCars({ cars, setCars, saveUserCars }: Props) {
 
             <div className="flex gap-3">
               <button onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-xl border border-border text-muted-foreground text-sm font-semibold">Отмена</button>
-              <button onClick={handleSave} disabled={!formModel.trim()} className="flex-1 btn-neon py-3 rounded-xl font-bold disabled:opacity-40">
-                {editId ? "Сохранить" : "Добавить"}
+              <button onClick={handleSave} disabled={!formModel.trim() || saving} className="flex-1 btn-neon py-3 rounded-xl font-bold disabled:opacity-40">
+                {saving ? "Сохранение..." : editId ? "Сохранить" : "Добавить"}
               </button>
             </div>
           </div>
