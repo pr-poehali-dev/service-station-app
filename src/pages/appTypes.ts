@@ -15,7 +15,8 @@ export const API = {
 
 export async function fetchUserCars(userId: number): Promise<UserCar[]> {
   const res = await fetch(`${API.getBids}?user_id=${userId}&mode=cars`);
-  const data = await res.json();
+  const raw = await res.json();
+  const data = typeof raw === "string" ? JSON.parse(raw) : (raw.body ? (typeof raw.body === "string" ? JSON.parse(raw.body) : raw.body) : raw);
   return data.cars || [];
 }
 
