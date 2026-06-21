@@ -15,21 +15,6 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
     [c.brand, c.model].filter(Boolean).join(" ").trim() || c.model;
 
   const [userSavedCars, setUserSavedCars] = useState<UserCar[]>(() => loadUserCars());
-
-  useEffect(() => {
-    if (!user.id) return;
-    fetchUserCars(user.id).then(fetched => {
-      if (fetched.length) {
-        setUserSavedCars(fetched);
-        saveUserCars(fetched);
-        if (fetched.length === 1 && !car) {
-          setCar(carLabel(fetched[0]));
-          if (fetched[0].year) setCarYear(String(fetched[0].year));
-        }
-      }
-    }).catch(() => {});
-  }, [user.id]);
-
   const [car, setCar] = useState(() => {
     const saved = loadUserCars();
     return saved.length === 1 ? carLabel(saved[0]) : "";
@@ -38,6 +23,20 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
     const saved = loadUserCars();
     return saved.length === 1 && saved[0].year ? String(saved[0].year) : "";
   });
+
+  useEffect(() => {
+    if (!user.id) return;
+    fetchUserCars(user.id).then(fetched => {
+      if (fetched.length) {
+        setUserSavedCars(fetched);
+        saveUserCars(fetched);
+        if (fetched.length === 1) {
+          setCar(prev => prev || carLabel(fetched[0]));
+          if (fetched[0].year) setCarYear(prev => prev || String(fetched[0].year));
+        }
+      }
+    }).catch(() => {});
+  }, [user.id]);
   const [city, setCity] = useState("");
   const [cityLoading, setCityLoading] = useState(false);
   const [cityEdit, setCityEdit] = useState(false);
