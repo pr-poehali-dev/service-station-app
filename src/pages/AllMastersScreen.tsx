@@ -206,8 +206,8 @@ export function AllMastersScreen({ city, onBack, goToNewRequest }: Props) {
                     <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20 truncate max-w-[60%]">
                       {m.specialty}
                     </span>
-                    {m.price_from > 0 && (
-                      <span className="text-xs font-semibold text-white">от {m.price_from.toLocaleString("ru")} ₽</span>
+                    {m.completed_orders > 0 && (
+                      <span className="text-xs text-muted-foreground">{m.completed_orders} заказов</span>
                     )}
                   </div>
                 </div>
