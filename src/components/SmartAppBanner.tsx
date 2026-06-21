@@ -23,13 +23,17 @@ export default function SmartAppBanner() {
   const [visible, setVisible] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const os = getOS();
+  const isDebug = new URLSearchParams(window.location.search).get("show_banner") === "1";
 
   useEffect(() => {
-    if (isStandalone()) return;
-    if (os === "other") return;
+    if (isStandalone() && !isDebug) return;
+    if (os === "other" && !isDebug) return;
     const dismissed = localStorage.getItem(STORAGE_KEY);
-    if (!dismissed) setVisible(true);
-  }, [os]);
+    if (!dismissed || isDebug) {
+      const t = setTimeout(() => setVisible(true), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [os, isDebug]);
 
   function dismiss() {
     localStorage.setItem(STORAGE_KEY, "1");
