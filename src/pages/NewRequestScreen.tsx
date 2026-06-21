@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  API, Screen, Bid, AuthUser,
-  loadUserCars, addUserCar,
+  API, Screen, Bid, AuthUser, UserCar,
+  loadUserCars, saveUserCars, fetchUserCars, addUserCar,
 } from "./appTypes";
 import { RequestWaitingScreen } from "./RequestWaitingScreen";
 import { RequestFormHeader } from "./RequestFormHeader";
@@ -11,17 +11,32 @@ import { RequestFormBody } from "./RequestFormBody";
 export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedService }: { setScreen: (s: Screen) => void; targetMasterId: number | null; user: AuthUser; preselectedService?: string }) {
   const [selectedService, setSelectedService] = useState(preselectedService ?? "");
   const [description, setDescription] = useState("");
-  const userSavedCars = loadUserCars();
-  const carLabel = (c: typeof userSavedCars[0]) =>
+  const carLabel = (c: UserCar) =>
     [c.brand, c.model].filter(Boolean).join(" ").trim() || c.model;
 
+  const [userSavedCars, setUserSavedCars] = useState<UserCar[]>(() => loadUserCars());
+
+  useEffect(() => {
+    if (!user.id) return;
+    fetchUserCars(user.id).then(fetched => {
+      if (fetched.length) {
+        setUserSavedCars(fetched);
+        saveUserCars(fetched);
+        if (fetched.length === 1 && !car) {
+          setCar(carLabel(fetched[0]));
+          if (fetched[0].year) setCarYear(String(fetched[0].year));
+        }
+      }
+    }).catch(() => {});
+  }, [user.id]);
+
   const [car, setCar] = useState(() => {
-    return userSavedCars.length === 1 ? carLabel(userSavedCars[0]) : "";
+    const saved = loadUserCars();
+    return saved.length === 1 ? carLabel(saved[0]) : "";
   });
   const [carYear, setCarYear] = useState(() => {
-    return userSavedCars.length === 1 && userSavedCars[0].year
-      ? String(userSavedCars[0].year)
-      : "";
+    const saved = loadUserCars();
+    return saved.length === 1 && saved[0].year ? String(saved[0].year) : "";
   });
   const [city, setCity] = useState("");
   const [cityLoading, setCityLoading] = useState(false);

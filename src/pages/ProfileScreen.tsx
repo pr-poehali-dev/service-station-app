@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
-import { API, AuthUser, UserCar, Screen, loadUserCars, saveUserCars } from "./appTypes";
+import { API, AuthUser, UserCar, Screen, loadUserCars, saveUserCars, fetchUserCars } from "./appTypes";
 import { ProfileHeader } from "./profile/ProfileHeader";
 import { MasterStation } from "./profile/MasterStation";
 import { ClientCars } from "./profile/ClientCars";
 import { ProfileSettings } from "./profile/ProfileSettings";
 
 export function ProfileScreen({ user, onLogout, setScreen }: { user: AuthUser; onLogout: () => void; setScreen: (s: Screen) => void }) {
-  const [cars, setCars] = useState<UserCar[]>(() => {
-    const saved = loadUserCars();
-    return saved.length ? saved : [
-      { id: "1", model: "Toyota Camry 2021", plate: "А 847 МС 777", color: "Белый" },
-      { id: "2", model: "BMW X5 2020", plate: "В 234 КО 750", color: "Серый" },
-    ];
-  });
+  const [cars, setCars] = useState<UserCar[]>(() => loadUserCars());
+
+  useEffect(() => {
+    if (user.role === "master" || !user.id) return;
+    fetchUserCars(user.id).then(fetched => {
+      if (fetched.length) { setCars(fetched); saveUserCars(fetched); }
+    }).catch(() => {});
+  }, [user.id]);
 
   const [masterStation, setMasterStation] = useState("");
   const [masterSpecialties, setMasterSpecialties] = useState<string[]>([]);
