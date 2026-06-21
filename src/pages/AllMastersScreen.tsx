@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
-import { API, pluralOrders } from "./appTypes";
+import { API, ordersWord } from "./appTypes";
 import { Stars, Avatar } from "./appHelpers";
 
 interface ApiMaster {
@@ -206,7 +206,7 @@ export function AllMastersScreen({ city, onBack, goToNewRequest }: Props) {
                       {m.specialty}
                     </span>
                     {m.completed_orders > 0 && (
-                      <span className="text-xs font-mono-tech text-neon-cyan">{pluralOrders(m.completed_orders)}</span>
+                      <span className="text-xs font-mono-tech"><span className="text-neon-cyan">{m.completed_orders}</span> <span className="text-white">{ordersWord(m.completed_orders)}</span></span>
                     )}
                   </div>
                 </div>

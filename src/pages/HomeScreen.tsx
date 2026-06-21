@@ -1,5 +1,5 @@
 import Icon from "@/components/ui/icon";
-import { Screen, Master, masters, pluralOrders } from "./appTypes";
+import { Screen, Master, masters, ordersWord } from "./appTypes";
 import { Stars, Avatar } from "./appHelpers";
 
 export function HomeScreen({ setScreen, goToNewRequest, onShowAllMasters }: { setScreen: (s: Screen) => void; goToNewRequest: (masterId?: number, service?: string) => void; onShowAllMasters: () => void }) {
@@ -114,7 +114,7 @@ export function HomeScreen({ setScreen, goToNewRequest, onShowAllMasters }: { se
                   </div>
                   <div className="flex justify-between items-center mt-2">
                     <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">{m.specialty}</span>
-                    {m.completedOrders > 0 && <span className="font-mono-tech text-neon-cyan text-xs font-medium">{pluralOrders(m.completedOrders)}</span>}
+                    {m.completedOrders > 0 && <span className="font-mono-tech text-xs font-medium"><span className="text-neon-cyan">{m.completedOrders}</span> <span className="text-white">{ordersWord(m.completedOrders)}</span></span>}
                   </div>
                 </div>
               </div>
