@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "Check and close expired requests",
+      "method": "POST",
+      "path": "/",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial",
+      "expectedBody": {"ids": []}
+    }
+  ]
+}
